@@ -21,7 +21,7 @@
 %% Function to get the head response angle in azimuth and elevation
 function [responseFBAz,responseFBEle,currXAngle,currYAngle,currZAngle,...
     currAccRoll,currAccPitch] = getHeadResponse(calib,calibTime)
-global tobiiTalk keepAlive dt
+global tobiiTalk keepAlive dt tobiiData
 
 currRow = 1;
 currGyRow = 1;
@@ -36,8 +36,8 @@ currZAngle = 0;
 tic
 % Gets data from glasses until the subject clicks
 if isempty(calibTime)
+    fwrite(tobiiTalk,keepAlive)
     while clicks(1) == 0
-        fwrite(tobiiTalk,keepAlive)
         tobiiData{currRow,1} = fscanf(tobiiTalk,'%s');
         if isempty(tobiiData{1,1})
             error('Cannot connect to Tobii')
@@ -48,8 +48,8 @@ if isempty(calibTime)
 else
     % Gets data from glasses for time specified by calibTime
     tic
+    fwrite(tobiiTalk,keepAlive)  
     while toc <= calibTime
-        fwrite(tobiiTalk,keepAlive)
         tobiiData{currRow,1} = fscanf(tobiiTalk,'%s');
         if isempty(tobiiData{1,1})
             error('Cannot connect to Tobii')
@@ -96,14 +96,14 @@ elseif length(Acc)==q
 end
 
 % Shave off the beginning (should change this) due to resampling artifacts
-% and wierd Gyro artificats 
-Acc = Acc(10:end,:);
-Gy = Gy(10:end,:);
+% and wierd Gyro artificats
+% Acc = Acc(10:end,:);
+% Gy = Gy(10:end,:);
 
 % Calculates the pitch and roll from Acc data
 for i = 1:length(Acc)-1
-    currAccPitch(i) = (atan2(Acc(i,2), Acc(i,3)) * 180/pi)-calib.Pitch;%added a random offest
-    currAccRoll(i) = (atan2(-Acc(i,1), sqrt(Acc(i,2)*Acc(i,2) + Acc(i,3)*Acc(i,3))) * 180/pi)-calib.Roll;
+    currAccPitch(i) = ((atan2(Acc(i,2), Acc(i,3)) * 180/pi)+96)-calib.Pitch;%added a random offest
+    currAccRoll(i) = (atan2(-Acc(i,1), sqrt(Acc(i,2)*Acc(i,2) + Acc(i,3)*Acc(i,3))) * 180/pi) -calib.Roll;
 end
 
 % Put in a low pass filter for Acc data here as it is quite noisy
@@ -114,7 +114,7 @@ end
 % calibrate out the drift
 for i = 1:length(Gy)-2
     currXAngle(i+1) = ((0.98*(currXAngle(i)+(Gy(i+1,1)*dt)))+(0.02*currAccPitch(i+1)));
-    currYAngle(i+1) = (currYAngle(i) + (Gy(i+1,2)*dt))-calib.Y;
+    currYAngle(i+1) = (currYAngle(i) + (Gy(i+1,2)*dt)); %-calib.Y;
     currZAngle(i+1) = ((0.98*(currZAngle(i) + (Gy(i+1,3)*dt)))+(0.02*currAccRoll(i+1)));
 end
 
@@ -122,9 +122,9 @@ end
 figure('Name','Get Response Function Fig')
 t = 1:dt:((length(currXAngle)*dt)+1)-dt;
 plot(t,currXAngle); hold on
-plot(t,currYAngle); 
-plot(t,currZAngle); 
-plot(t,currAccRoll); 
+plot(t,currYAngle);
+plot(t,currZAngle);
+plot(t,currAccRoll);
 plot(t,currAccPitch);
 legend('X Pitch','Y Yaw','Z Roll','Roll','Pitch'); hold on
 title('Tobii MEMs Data with Complimentary Filter')
@@ -134,7 +134,7 @@ hold off
 
 % Gets a mean response angle looking at last few data points
 % Yaw = currYAngle, left is positive.
-responseFBAz = mean(currYAngle(end-5:end)); 
+responseFBAz = mean(currYAngle(end-5:end));
 % Ele = currXAngle
 responseFBEle = mean(currXAngle(end-5:end));
 

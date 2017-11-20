@@ -1,0 +1,7 @@
+Azimuth	Elevation
+-90	0
+-45	0
+0	0
+45	0
+90	0
+
