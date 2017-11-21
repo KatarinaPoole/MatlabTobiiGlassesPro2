@@ -3,6 +3,7 @@ clear all
 % Initialisation
 global tobiiTalk keepAlive dt tobiiData
 tobiiTalk = udp('[fe80::76fe:48ff:fe19:fbaf]',49152); %the address and port
+% tobiiTalk.DatagramTerminateMode = 'off';
 keepAlive = jsonencode(struct('op','start','type','live.data.unicast',...
     'key','staying_alive_staying_alive'));
 dt = 0.0107; %this needs to be set by the gyroscope sampling rate as if
@@ -27,7 +28,7 @@ calib.Y = 0;
 
 %Get first response and new calibration parameters
 %rest glasses on flat surface to get appropriate offset for accelerometer)
-[~,~,currXAngle,currYAngle,currZAngle,currAccRoll,currAccPitch] = getHeadResponse(calib,10);
+[~,~,currXAngle,currYAngle,currZAngle,currAccRoll,currAccPitch] = getHeadResponse(calib,[]);
 t = 1:length(currXAngle);
 
 % %% 
@@ -61,4 +62,4 @@ t = 1:length(currXAngle);
 %     end
 % end
 % % Insert angle to X Y coordinates with geoTrans here when have time (
-% fclose(tobiiTalk);
+fclose(tobiiTalk);

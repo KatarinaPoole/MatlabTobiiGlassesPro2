@@ -27,44 +27,64 @@ currRow = 1;
 currGyRow = 1;
 currAccRow = 1;
 clicks = 0;
-
+currTs = 0;
 % Due to integration need starting angle of 0
 currXAngle = 0;
 currYAngle = 0;
 currZAngle = 0;
 
-tic
+% Issue with getting data (only seems to scn for like 7.8 seconds (this
+% could be due to keep alive not working correctly or perhaps its not able
+% to hold that much data?
+% try different things
+etime = tic;
+fwrite(tobiiTalk,keepAlive)
+tobiiData{currRow,1} = fscanf(tobiiTalk,'%s');
+firstTs = str2double(tobiiData{currRow,1}(7:strfind(tobiiData{currRow},',')-1)); %gets the Ts
+
+if isempty(tobiiData{1,1})
+    error('Cannot connect to Tobii')
+end
+currRow = currRow + 1;
+
 % Gets data from glasses until the subject clicks
 if isempty(calibTime)
-    fwrite(tobiiTalk,keepAlive)
+    clickTime = tic;
     while clicks(1) == 0
+        fwrite(tobiiTalk,keepAlive)
         tobiiData{currRow,1} = fscanf(tobiiTalk,'%s');
         if isempty(tobiiData{1,1})
             error('Cannot connect to Tobii')
         end
         [~,~,clicks] = GetMouse(1);
         currRow = currRow + 1;
+        eclickTime = toc(clickTime)
     end
-else
-    % Gets data from glasses for time specified by calibTime
-    tic
-    fwrite(tobiiTalk,keepAlive)  
-    while toc <= calibTime
+    while ((currTs-firstTs)*1e-6) <= eclickTime
+        fwrite(tobiiTalk,keepAlive)
         tobiiData{currRow,1} = fscanf(tobiiTalk,'%s');
-        if isempty(tobiiData{1,1})
-            error('Cannot connect to Tobii')
-        end
+        currTs = str2double(tobiiData{currRow,1}(7:strfind(tobiiData{currRow},',')-1));
         currRow = currRow + 1;
         
     end
+else
+    % Gets data from glasses for time specified by calibTime
+    fwrite(tobiiTalk,keepAlive)
+    tobiiData{currRow,1} = fscanf(tobiiTalk,'%s');
+    while ((currTs-firstTs)*1e-6) <= calibTime %put in otherwise its stops reading too early
+        fwrite(tobiiTalk,keepAlive)
+        tobiiData{currRow,1} = fscanf(tobiiTalk,'%s');
+        currTs = str2double(tobiiData{currRow,1}(7:strfind(tobiiData{currRow},',')-1));
+        currRow = currRow + 1;
+    end
 end
-toc
+toc(etime)
 
 % Pulls out data from the JSON Cell array
 for currRow = 1:length(tobiiData)
     if contains(tobiiData{currRow},'gy') %pulls out the GY JSON lines
-        GyTs(currGyRow) = str2double(tobiiData{currRow}...
-            (7:strfind(tobiiData{currRow},',')-1)); %gets the Ts - don't need this?
+        GyTs(currGyRow) = str2double(tobiiData{currRow}...which is in microseconds
+            (7:strfind(tobiiData{currRow},',')-1)); %gets the Ts
         currGy = strsplit(tobiiData{currRow},','); %splits the Gy Data
         if length(currGy)==5
             Gy(currGyRow,1) = str2double(currGy{3}(strfind(currGy{3},'[')+1:end)); %x Gy
@@ -120,7 +140,8 @@ end
 
 % Plots to visualise the tracking and effects of the complimentary filter
 figure('Name','Get Response Function Fig')
-t = 1:dt:((length(currXAngle)*dt)+1)-dt;
+t = 0:dt:((length(currXAngle)-1)*dt);
+
 plot(t,currXAngle); hold on
 plot(t,currYAngle);
 plot(t,currZAngle);
