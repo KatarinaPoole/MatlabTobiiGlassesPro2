@@ -26,27 +26,30 @@ calib.X = 0;
 calib.Z = 0;
 calib.Y = 0;
 
-%Get first response and new calibration parameters
-%rest glasses on flat surface to get appropriate offset for accelerometer)
-[~,~,currXAngle,currYAngle,currZAngle,currAccRoll,currAccPitch] = getHeadResponse(calib,[]);
-t = 1:length(currXAngle);
-
-% %% 
-% calib.Pitch = mean(currAccPitch);
-% calib.Roll = mean(currAccRoll);
-% calib.X = mean(currXAngle);
-% calib.Z = mean(currZAngle);
-% %to minimise the drift finding out the drift when stable and then finding
-% %the gradient and when calculating angle we make sure to take in the drift
-% fitvars = polyfit(t,currYAngle,1);
-% calib.Y = fitvars(1);
-% disp('Applying the calib')
-% save(sprintf('%s',date,'_Head_Calibration.mat'),'calib')
-% 
-% % Check calibration
-% [~,~,currXAngle,currYAngle,currZAngle,currAccRoll,currAccPitch] =...
-%     getHeadResponse(calib,10);
-% 
+if isempty(dir('C:\Psychophysics\HeadCalibrations\*.mat'))
+    
+    %Get first response and new calibration parameters
+    %rest glasses on flat surface to get appropriate offset for accelerometer)
+    [~,~,currXAngle,currYAngle,currZAngle,currAccRoll,currAccPitch] = getHeadResponse(calib,[]);
+    t = 1:length(currXAngle);
+    
+    calib.Pitch = mean(currAccPitch);
+    calib.Roll = mean(currAccRoll);
+    % calib.X = mean(currXAngle);
+    % calib.Z = mean(currZAngle);
+    % %to minimise the drift finding out the drift when stable and then finding
+    % %the gradient and when calculating angle we make sure to take in the drift
+    fitvars = polyfit(t,currYAngle,1);
+    % calib.Y = fitvars(1);
+    disp('Applying the calib')
+    save(sprintf('%s','C:\Psychophysics\HeadCalibrations',date,'_Head_Calibration.mat'),'calib')
+end
+disp('Ready to check calibration?')
+KbStrokeWait;
+% Check calibration
+[~,~,currXAngle,currYAngle,currZAngle,currAccRoll,currAccPitch] =...
+    getHeadResponse(calib,[]);
+%
 % % Run throuh all the calibration locations and get reponse angles for each
 % % of them
 % calibResponses = zeros(noLocs,noReps,2);
@@ -57,7 +60,7 @@ t = 1:length(currXAngle);
 %             num2str(locations.Elevation(currLoc)),' in elevation')
 %         [responseFBAz,responseFBEle] = getHeadResponse(calib,[]);
 %                 calibResponses(currLoc,noReps,:) = [reponseFBAz,responseFBEl];
-% 
+%
 %         KbStrokeWait;
 %     end
 % end

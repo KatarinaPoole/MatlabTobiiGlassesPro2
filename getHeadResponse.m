@@ -47,6 +47,8 @@ if isempty(tobiiData{1,1})
 end
 currRow = currRow + 1;
 
+profile on
+
 % Gets data from glasses until the subject clicks
 if isempty(calibTime)
     clickTime = tic;
@@ -79,7 +81,8 @@ else
     end
 end
 toc(etime)
-
+profile off
+profile viewer
 % Pulls out data from the JSON Cell array
 for currRow = 1:length(tobiiData)
     if contains(tobiiData{currRow},'gy') %pulls out the GY JSON lines
