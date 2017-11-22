@@ -1,4 +1,4 @@
-% Calibrate Head Tracking in Tobii for the Psychophsyics Booth
+ % Calibrate Head Tracking in Tobii for the Psychophsyics Booth
 clear all
 % Initialisation
 global tobiiTalk keepAlive dt tobiiData
@@ -26,7 +26,7 @@ calib.X = 0;
 calib.Z = 0;
 calib.Y = 0;
 
-if isempty(dir('C:\Psychophysics\HeadCalibrations\*.mat'))
+if isempty(dir('C:\Psychophysics\HeadCalibrations\*.mat')) %change this if loop
     
     %Get first response and new calibration parameters
     %rest glasses on flat surface to get appropriate offset for accelerometer)
@@ -42,7 +42,9 @@ if isempty(dir('C:\Psychophysics\HeadCalibrations\*.mat'))
     fitvars = polyfit(t,currYAngle,1);
     % calib.Y = fitvars(1);
     disp('Applying the calib')
-    save(sprintf('%s','C:\Psychophysics\HeadCalibrations',date,'_Head_Calibration.mat'),'calib')
+    save(sprintf('%s','C:\Psychophysics\HeadCalibrations\',date,'_Head_Calibration.mat'),'calib')
+else 
+    load(sprintf('%s','C:\Psychophysics\HeadCalibrations\',date,'_Head_Calibration.mat'))
 end
 disp('Ready to check calibration?')
 KbStrokeWait;

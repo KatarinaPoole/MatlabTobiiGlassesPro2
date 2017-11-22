@@ -71,7 +71,7 @@ if isempty(calibTime)
     end
 else
     % Gets data from glasses for time specified by calibTime
-    fwrite(tobiiTalk,keepAlive)
+%     fwrite(tobiiTalk,keepAlive)
     tobiiData{currRow,1} = fscanf(tobiiTalk,'%s');
     while ((currTs-firstTs)*1e-6) <= calibTime %put in otherwise its stops reading too early
         fwrite(tobiiTalk,keepAlive)
