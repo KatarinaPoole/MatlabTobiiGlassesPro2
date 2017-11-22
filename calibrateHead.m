@@ -1,7 +1,10 @@
- % Calibrate Head Tracking in Tobii for the Psychophsyics Booth
+% Calibrate Head Tracking in Tobii for the Psychophsyics Booth
 clear all
 % Initialisation
 global tobiiTalk keepAlive dt tobiiData
+
+initialiseLEDs;
+
 tobiiTalk = udp('[fe80::76fe:48ff:fe19:fbaf]',49152); %the address and port
 % tobiiTalk.DatagramTerminateMode = 'off';
 keepAlive = jsonencode(struct('op','start','type','live.data.unicast',...
@@ -19,6 +22,7 @@ tobiiData = {};
 noReps = 8; %change to increase or decrease reliability
 locations = readtable('CalibrationLocations.txt');
 noLocs = size(locations,1);
+
 % Init calib parameters
 calib.Pitch = 0;
 calib.Roll = 0;
@@ -27,9 +31,12 @@ calib.Z = 0;
 calib.Y = 0;
 
 if isempty(dir('C:\Psychophysics\HeadCalibrations\*.mat')) %change this if loop
-    
+        
     %Get first response and new calibration parameters
     %rest glasses on flat surface to get appropriate offset for accelerometer)
+    % LED on
+
+    
     [~,~,currXAngle,currYAngle,currZAngle,currAccRoll,currAccPitch] = getHeadResponse(calib,[]);
     t = 1:length(currXAngle);
     
@@ -43,9 +50,11 @@ if isempty(dir('C:\Psychophysics\HeadCalibrations\*.mat')) %change this if loop
     % calib.Y = fitvars(1);
     disp('Applying the calib')
     save(sprintf('%s','C:\Psychophysics\HeadCalibrations\',date,'_Head_Calibration.mat'),'calib')
-else 
+else
     load(sprintf('%s','C:\Psychophysics\HeadCalibrations\',date,'_Head_Calibration.mat'))
 end
+
+
 disp('Ready to check calibration?')
 KbStrokeWait;
 % Check calibration
