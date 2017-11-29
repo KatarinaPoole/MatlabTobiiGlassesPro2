@@ -1,7 +1,6 @@
-Pin	Colour	LocAz	LocEle
-D3	Green	-90	0	
-D5	Red	-45	0
-D6	Red	0	0
-D9	Blue	0	0
-D10	Red	45	0
-D11	Red	90	0
+LocAz	LocEle	R	G	B
+-90	0	1	2	3
+-45	0	4	5	6
+0	0	7	8	9
+45	0	10	11	12
+90	0	13	14	15

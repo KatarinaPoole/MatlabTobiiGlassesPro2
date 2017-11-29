@@ -21,7 +21,9 @@
 %% Function to get the head response angle in azimuth and elevation
 function [responseFBAz,responseFBEle,currXAngle,currYAngle,currZAngle,...
     currAccRoll,currAccPitch] = getHeadResponse(calib,calibTime)
-global tobiiTalk keepAlive dt tobiiData
+global tobiiTalk keepAlive 
+
+dt = 0.0107; % Gyroscope sampling rate
 
 currRow = 1;
 currGyRow = 1;
@@ -32,22 +34,17 @@ currTs = 0;
 currXAngle = 0;
 currYAngle = 0;
 currZAngle = 0;
+tobiiData = {};
 
-% Issue with getting data (only seems to scn for like 7.8 seconds (this
-% could be due to keep alive not working correctly or perhaps its not able
-% to hold that much data?
-% try different things
+% Get first row
 etime = tic;
 fwrite(tobiiTalk,keepAlive)
 tobiiData{currRow,1} = fscanf(tobiiTalk,'%s');
 firstTs = str2double(tobiiData{currRow,1}(7:strfind(tobiiData{currRow},',')-1)); %gets the Ts
-
 if isempty(tobiiData{1,1})
     error('Cannot connect to Tobii')
 end
 currRow = currRow + 1;
-
-profile on
 
 % Gets data from glasses until the subject clicks
 if isempty(calibTime)
@@ -60,7 +57,7 @@ if isempty(calibTime)
         end
         [~,~,clicks] = GetMouse(1);
         currRow = currRow + 1;
-        eclickTime = toc(clickTime)
+        eclickTime = toc(clickTime);
     end
     while ((currTs-firstTs)*1e-6) <= eclickTime
         fwrite(tobiiTalk,keepAlive)
@@ -69,9 +66,9 @@ if isempty(calibTime)
         currRow = currRow + 1;
         
     end
+    disp(eclickTime)
 else
     % Gets data from glasses for time specified by calibTime
-%     fwrite(tobiiTalk,keepAlive)
     tobiiData{currRow,1} = fscanf(tobiiTalk,'%s');
     while ((currTs-firstTs)*1e-6) <= calibTime %put in otherwise its stops reading too early
         fwrite(tobiiTalk,keepAlive)
@@ -81,30 +78,33 @@ else
     end
 end
 toc(etime)
-profile off
-profile viewer
+
 % Pulls out data from the JSON Cell array
 for currRow = 1:length(tobiiData)
     if contains(tobiiData{currRow},'gy') %pulls out the GY JSON lines
         GyTs(currGyRow) = str2double(tobiiData{currRow}...which is in microseconds
             (7:strfind(tobiiData{currRow},',')-1)); %gets the Ts
-        currGy = strsplit(tobiiData{currRow},','); %splits the Gy Data
-        if length(currGy)==5
-            Gy(currGyRow,1) = str2double(currGy{3}(strfind(currGy{3},'[')+1:end)); %x Gy
-            Gy(currGyRow,2) = str2double(currGy{4}); %y Gy
-            Gy(currGyRow,3) = str2double(currGy{5}(1:end-2)); %z Gy
-            currGyRow = currGyRow + 1;
+        if tobiiData{currRow}(end)=='}'
+            currGy = strsplit(tobiiData{currRow},','); %splits the Gy Data
+            if length(currGy)==5
+                Gy(currGyRow,1) = str2double(currGy{3}(strfind(currGy{3},'[')+1:end)); %x Gy
+                Gy(currGyRow,2) = str2double(currGy{4}); %y Gy
+                Gy(currGyRow,3) = str2double(currGy{5}(1:end-2)); %z Gy
+                currGyRow = currGyRow + 1;
+            end
         end
     elseif contains(tobiiData{currRow},'ac')
         AccTs(currAccRow) = str2double(tobiiData{currRow}...
             (7:strfind(tobiiData{currRow},',')-1)); %gets the Ts
-        currAcc = strsplit(tobiiData{currRow},','); %splits the Acc Data
-        %put a line in here to check the s
-        if length(currAcc)==5 %to ignore any lost data
-            Acc(currAccRow,1) = str2double(currAcc{3}(strfind(currAcc{3},'[')+1:end)); %x Acc
-            Acc(currAccRow,2) = str2double(currAcc{4}); %y Acc
-            Acc(currAccRow,3) = str2double(currAcc{5}(1:end-2)); %z Acc
-            currAccRow = currAccRow + 1;
+        if tobiiData{currRow}(end)=='}'
+            currAcc = strsplit(tobiiData{currRow},','); %splits the Acc Data
+            %put a line in here to check the s
+            if length(currAcc)==5 %to ignore any lost data
+                Acc(currAccRow,1) = str2double(currAcc{3}(strfind(currAcc{3},'[')+1:end)); %x Acc
+                Acc(currAccRow,2) = str2double(currAcc{4}); %y Acc
+                Acc(currAccRow,3) = str2double(currAcc{5}(1:end-2)); %z Acc
+                currAccRow = currAccRow + 1;
+            end
         end
     end
 end
@@ -112,21 +112,20 @@ end
 % Resamples data as Acc and Gy have slightly differing sample rates
 p = max([length(Gy) length(Acc)]);
 q = min([length(Gy) length(Acc)]);
-if length(Gy) == q
-    Acc = resample(Acc,q,p);
-elseif length(Acc)==q
-    Gy = resample(Gy,q,p);
-end
+Acc = resample(Acc,q,p); %will always want to resample Acc
+
 
 % Shave off the beginning (should change this) due to resampling artifacts
 % and wierd Gyro artificats
 % Acc = Acc(10:end,:);
 % Gy = Gy(10:end,:);
+% Acc = smooth(Acc);
+% Gy = smooth(Gy);
 
 % Calculates the pitch and roll from Acc data
 for i = 1:length(Acc)-1
-    currAccPitch(i) = ((atan2(Acc(i,2), Acc(i,3)) * 180/pi)+96)-calib.Pitch;%added a random offest
-    currAccRoll(i) = (atan2(-Acc(i,1), sqrt(Acc(i,2)*Acc(i,2) + Acc(i,3)*Acc(i,3))) * 180/pi) -calib.Roll;
+    currAccPitch(i) = (atan2(Acc(i,2), Acc(i,3)) * 180/pi)+96-calib.Pitch;%added a random offest
+    currAccRoll(i) = (atan2(-Acc(i,1), sqrt(Acc(i,2)*Acc(i,2) + Acc(i,3)*Acc(i,3))) * 180/pi)-calib.Roll;
 end
 
 % Put in a low pass filter for Acc data here as it is quite noisy
