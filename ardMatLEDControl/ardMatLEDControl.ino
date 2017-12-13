@@ -3,7 +3,7 @@ int RCLK_Pin = 8;  //pin 12 on the 75HC595
 int SRCLK_Pin = 12; //pin 11 on the 75HC595
 
 //How many of the shift registers - change this
-#define number_of_74hc595s 6
+#define number_of_74hc595s 14
 
 //do not touch
 #define numOfRegisterPins number_of_74hc595s * 8

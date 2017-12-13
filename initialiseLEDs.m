@@ -12,9 +12,8 @@ ardLED = serial('COM4','BaudRate',115200); % might be able to keep this open wit
 LED.info = readtable('assignLEDs.txt','HeaderLines',0,'ReadVariableNames',1);
     fopen(ardLED); %when opening the connection is causes the led to go white
 
-LEDorder = [1:1:height(LED.info) height(LED.info):-1:1];
 
 %uninitialise
-    fclose(ardLED);
+%     fclose(ardLED);
 
-    instrreset %need this at the beginning or the end if it doesn't close the connection properly
+%     instrreset %need this at the beginning or the end if it doesn't close the connection properly

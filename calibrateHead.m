@@ -17,6 +17,8 @@ end
 noReps = 8; %change to increase or decrease reliability
 locations = readtable('CalibrationLocations.txt');
 noLocs = size(locations,1);
+currRow = 1;
+clicks = 0;
 
 % Init calib parameters
 calib.Pitch = 0;
@@ -28,7 +30,7 @@ calib.Y = 0;
 %Get first response and new calibration parameters
 if isempty(dir('C:\Psychophysics\HeadCalibrations\*.mat')) %change this if loop
     LEDcontrol(0,0,'on')
-    [~,~,currXAngle,currYAngle,currZAngle,currAccRoll,currAccPitch] = getHeadResponse(calib,10);
+    [~,~,currXAngle,currYAngle,currZAngle,currAccRoll,currAccPitch] = getHeadResponse(calib,10,[],[]);
     
     t = 1:length(currXAngle);
     calib.Pitch = mean(currAccPitch);
@@ -42,30 +44,36 @@ if isempty(dir('C:\Psychophysics\HeadCalibrations\*.mat')) %change this if loop
 else
     load(sprintf('%s','C:\Psychophysics\HeadCalibrations\',date,'_Head_Calibration.mat'))
 end
-LEDcontrol(0,0,'off')
 
 disp('Ready to check calibration?')
-KbStrokeWait;
+% KbStrokeWait;
+disp('Checking calibration')
 % Check calibration
+pause(5)
+disp('Recording now')
 [~,~,currXAngle,currYAngle,currZAngle,currAccRoll,currAccPitch] =...
-    getHeadResponse(calib,[]);
+    getHeadResponse(calib,20,[],[]);
 
 % Run throuh all the calibration locations and get reponse angles for each
 % of them
-figure
 calibResponses = zeros(noLocs,noReps,2);
-
 %Just one repeat
 for currLoc = 1:noLocs
-        fprintf('%s','Please look to the location of ',...
-            num2str(locations.Azimuth(currLoc)),' in azimuth and ',...
-            num2str(locations.Elevation(currLoc)),' in elevation')
-        [responseFBAz,responseFBEle,currXAngle,currYAngle] = getHeadResponse(calib,[]);
-        calibResponses(currLoc,noReps,:) = [reponseFBAz,responseFBEl];
-        
-        KbStrokeWait;
+    disp(sprintf('%s','Please look to the location of ',...
+        num2str(locations.Azimuth(currLoc)),' in azimuth and ',...
+        num2str(locations.Elevation(currLoc)),' in elevation and press key when ready'))
+    KbStrokeWait;
+    disp('Recording reponse')
+    [responseFBAz,responseFBEle,currXAngle,currYAngle] = getHeadResponse(calib,...
+        [],locations.Azimuth(currLoc),locations.Elevation(currLoc));
+    calibResponses(currLoc,noReps,:) = [responseFBAz,responseFBEle];
 end
-% 
+
+for i = 1:size(calibResponses,1)
+    for ii = 1:size(calibResponses,2)
+    end
+end
+%
 % for currRep = 1:noReps
 %     for currLoc = 1:noLocs
 %         fprintf('%s','Please look to the location of ',...
@@ -73,7 +81,7 @@ end
 %             num2str(locations.Elevation(currLoc)),' in elevation')
 %         [responseFBAz,responseFBEle,currXAngle,currYAngle] = getHeadResponse(calib,[]);
 %         calibResponses(currLoc,noReps,:) = [reponseFBAz,responseFBEl];
-%         
+%
 %         KbStrokeWait;
 %     end
 % end
