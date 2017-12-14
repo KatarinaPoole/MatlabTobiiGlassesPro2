@@ -63,9 +63,7 @@ if __name__ == "__main__":
 			if var == 'clicks':
 				clicks = win32api.GetAsyncKeyState(0x01) # get clicks
 				if clicks != 0: # if theres a click anywhere stop the while loop
-				#print('Button pressed')
 					running = False
-					#print(clicks)
 			else:
 				if time.time() > calibTime:
 					running = False

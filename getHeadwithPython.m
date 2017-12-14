@@ -94,27 +94,27 @@ end
 % Calculates actual angle using Gyroscope and Acc Data (Complimentary
 % Filter)
 for idx = 1:length(Gy)-2
-    currAngle.X(idx+1) = ((0.98*(currAngle.X(idx)+(Gy(idx+1,1)*dt)))+(0.02*currAccPitch(idx+1)));
-    currAngle.Y(idx+1) = (currAngle.Y(idx) + (Gy(idx+1,2)*dt)); % Could high pass to cancel out drift?
-    currAngle.Z(idx+1) = ((0.98*(currAngle.Z(idx) + (Gy(idx+1,3)*dt)))+(0.02*currAccRoll(idx+1)));
+    currAngle.X(idx+1) = ((0.97*(currAngle.X(idx)+(Gy(idx+1,1)*dt)))+(0.03*currAccPitch(idx+1)));
+    currAngle.Y(idx+1) = (currAngle.Y(idx) + (Gy(idx+1,2)*dt))-calib.Y; % a botch job to cancel out the drift
+    currAngle.Z(idx+1) = ((0.97*(currAngle.Z(idx) + (Gy(idx+1,3)*dt)))+(0.03*currAccRoll(idx+1)));
 end
 
 % Plots to visualise the tracking and effects of the complimentary filter
-figure%('Name',sprintf('%s',num2str(LocAz),' degress in Azimuth and ',num2str(LocEle),...
-    %'degrees in Elevation'))
-t = 0:dt:((length(currAngle.X)-1)*dt);
-
-plot(t,currAngle.X); hold on
-plot(t,currAngle.Y);
-plot(t,currAngle.Z);
-plot(t,currAccRoll);
-plot(t,currAccPitch);
-% plot(t,Gy(2:end,1)); plot(t,Gy(2:end,2)); plot(t,Gy(2:end,3));
-legend('X Pitch','Y Yaw','Z Roll','Roll','Pitch'); hold on
-title('Tobii MEMs Data with Complimentary Filter')
-xlabel('Time(s)')
-ylabel('Angle (degrees)')
-hold off
+% figure;%('Name',sprintf('%s',num2str(LocAz),' degress in Azimuth and ',num2str(LocEle),...
+%     'degrees in Elevation'))
+% t = 0:dt:((length(currAngle.X)-1)*dt);
+% 
+% plot(t,currAngle.X); hold on
+% plot(t,currAngle.Y);
+% plot(t,currAngle.Z);
+% plot(t,currAccRoll);
+% plot(t,currAccPitch);
+% % plot(t,Gy(2:end,1)); plot(t,Gy(2:end,2)); plot(t,Gy(2:end,3));
+% legend('X Pitch','Y Yaw','Z Roll','Roll','Pitch'); hold on
+% title('Tobii MEMs Data with Complimentary Filter')
+% xlabel('Time(s)')
+% ylabel('Angle (degrees)')
+% hold off
 
 % Gets a mean response angle looking at last few data points
 % Yaw = currAngle.Y, left is positive.
