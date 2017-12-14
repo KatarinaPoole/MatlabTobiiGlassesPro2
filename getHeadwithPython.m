@@ -1,9 +1,7 @@
-% New get Head using python (because apparently Matlab UDP is shite
 %% Function to get the head response angle in azimuth and elevation
 function [responseFBAz,responseFBEle,currAngle,...
     currAccRoll,currAccPitch] = getHeadwithPython(calib,responseType,LocAz,LocEle)
 
-% profile on
 
 % Runs python code that grabs the livestream data (second argument is
 % calibTime or 'clicks'
@@ -99,7 +97,14 @@ for idx = 1:length(Gy)-2
     currAngle.Z(idx+1) = ((0.97*(currAngle.Z(idx) + (Gy(idx+1,3)*dt)))+(0.03*currAccRoll(idx+1)));
 end
 
-% Plots to visualise the tracking and effects of the complimentary filter
+% Gets a mean response angle looking at last few data points
+% Yaw = currAngle.Y, left is positive.
+responseFBAz = -mean(currAngle.Y(end-5:end)); % Need to sign flip
+% Ele = currAngle.X
+responseFBEle = mean(currAngle.X(end-5:end));
+toc
+% Plots if you want it
+
 % figure;%('Name',sprintf('%s',num2str(LocAz),' degress in Azimuth and ',num2str(LocEle),...
 %     'degrees in Elevation'))
 % t = 0:dt:((length(currAngle.X)-1)*dt);
@@ -116,12 +121,4 @@ end
 % ylabel('Angle (degrees)')
 % hold off
 
-% Gets a mean response angle looking at last few data points
-% Yaw = currAngle.Y, left is positive.
-responseFBAz = mean(currAngle.Y(end-5:end));
-% Ele = currAngle.X
-responseFBEle = mean(currAngle.X(end-5:end));
-toc
-% profile off
-% profile viewer
 end
