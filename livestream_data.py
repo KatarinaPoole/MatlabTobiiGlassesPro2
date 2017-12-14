@@ -18,8 +18,8 @@ PORT = 49152
 tobiiData = []
 clicks = 0
 # Keep-alive message content used to request live data and live video streams
-KA_DATA_MSG = "{\"type\": \"live.data.unicast\", \"key\": \"some_GUID\", \"op\": \"start\"}"
-
+KA_DATA_STR = "{\"type\": \"live.data.unicast\", \"key\": \"some_GUID\", \"op\": \"start\"}"
+KA_DATA_MSG = KA_DATA_STR.encode() #need to encode it to work with python 3.6
 ## Functions
 # Create UDP socket
 def mksock(peer):
@@ -43,11 +43,14 @@ def stop_sending_msg():
 	global running
 	running = False
 
+# Need to put in a way to double check that it is pulling data for the required time (hopefully not as it doesnt seem like its lossfull or laggy?
 if __name__ == "__main__":
+		win32api.GetAsyncKeyState(0x01) #call at the beginning to check if clicks were detected in time window otherwise will do it from before
 		var = sys.argv[1]
+		if var.isdigit() == True:
+			calibTime = time.time() +float(var)
 		signal.signal(signal.SIGINT, signal_handler)
 		peer = (GLASSES_IP, PORT)
-		calibTime = time.time() +float(var)
 	# Create socket which will send a keep alive message for the live data stream
 		data_socket = mksock(peer)
 		data_socket.bind(('',PORT)) # Need this bind to get python to work with Windows
@@ -58,12 +61,13 @@ if __name__ == "__main__":
 			data, address = data_socket.recvfrom(1024)
 			tobiiData.append(data)
 			if var == 'clicks':
-				clicks = win32api.GetKeyState(0x01) # get clicks
-				if clicks ==1: # if theres a click anywhere stop the while loop
+				clicks = win32api.GetAsyncKeyState(0x01) # get clicks
+				if clicks != 0: # if theres a click anywhere stop the while loop
 				#print('Button pressed')
 					running = False
+					#print(clicks)
 			else:
 				if time.time() > calibTime:
 					running = False
-		sys.stdout.write(str(tobiiData))
+		sys.stdout.write(str(tobiiData)) 
 		

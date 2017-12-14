@@ -187,8 +187,8 @@ for idx = 1:length(Gy)-2
 end
 
 % Plots to visualise the tracking and effects of the complimentary filter
-figure('Name',sprintf('%s',num2str(LocAz),' degress in Azimuth and ',num2str(LocEle),...
-    'degrees in Elevation'))
+figure%('Name',sprintf('%s',num2str(LocAz),' degress in Azimuth and ',num2str(LocEle),...
+    %'degrees in Elevation'))
 t = 0:dt:((length(currXAngle)-1)*dt);
 
 plot(t,currXAngle); hold on
