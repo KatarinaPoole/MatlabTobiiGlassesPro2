@@ -28,6 +28,8 @@ void clearRegisters(){
      registers[i] = LOW;
   }
   writeRegisters();
+  Serial.flush(); //Flushes the transmit buffer
+  Serial.read(); //Flushes the recieve buffer
 } 
 
 //Set and display registers

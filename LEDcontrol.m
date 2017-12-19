@@ -43,5 +43,6 @@ if exist('ardLED','var')
             end
         case 'off'
             fwrite(ardLED, uint8(0));
+            flushoutput(ardLED)
     end
 end

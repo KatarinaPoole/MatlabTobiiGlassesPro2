@@ -3,11 +3,13 @@
 clear all
 instrreset;
 initialiseLEDs;
-disp('Press any key when ready to begin')
-pause;
+Type = input('Remap all LEDs? [Y/N]  ','s');
 varNames = {'LocAz','LocEle','R','G','B'};
-currPin = 1;
-
+if Type == 'Y' || Type == 'y'
+    currPin = 1;
+elseif Type == 'N' || Type == 'n'
+    currPin = table2array(LED.info(end,end));
+end
 while true
     LEDcontrol('Number','on',[],currPin)
     userOnOff = input('Is an LED on? [Y/N]    ','s');
@@ -33,24 +35,30 @@ alllocations = [LocAz',LocEle'];
 noNanlocations = unique([LocAz(~isnan(LocAz))' LocEle(~isnan(LocEle))'],'rows');
 
 % Make vars for the table
-for currLoc = 1:length(noNanlocations)
+for currLoc = 1:size(noNanlocations,2)
     currPins = find(noNanlocations(currLoc,1) == alllocations(:,1)&...
         noNanlocations(currLoc,2)==alllocations(:,2));
     % Make the table
     tabLocAz(currLoc) = noNanlocations(currLoc,1);
     tabLocEle(currLoc) = noNanlocations(currLoc,2);
+    try
     tabR(currLoc) = currPins(find(contains(Colour(currPins),'R')));
+    end
+    try
     tabG(currLoc) = currPins(find(contains(Colour(currPins),'G')));
+    end
+    try
     tabB(currLoc) = currPins(find(contains(Colour(currPins),'B')));
+    end
 end
 
 table = [tabLocAz', tabLocEle', tabR', tabG', tabB'];
 
+% Write to text
 fileID = fopen(sprintf('%s','C:\Psychophysics\assignLEDs',date,'.txt'),'w');
-fprintf(fileID,'%s\t %s\t %s\t %s\t %s\r\n','LocAz','LocEle','R','G','B');
+if Type == 'Y' || Type == 'y'
+    fprintf(fileID,'%s\t %s\t %s\t %s\t %s\r\n','LocAz','LocEle','R','G','B');
+end
 fprintf(fileID,'%g\t %g\t %g\t %g\t %g\r\n',table');
 fclose(fileID)
-    
-% Write to text 
 
-% Write a little test script

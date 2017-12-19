@@ -5,10 +5,11 @@
 % Cable 3 -> pin 3 top row
 % Cable 4 -> pin 6 top row
 global ardLED LED
+instrreset;
 ardLED = serial('COM4','BaudRate',115200); % might be able to keep this open with Tobii glasses or may not
 % Assign LED txt file has the location and the associated shift register
 % pins (beginning at 1 rather than 0)
-LEDfileName = dir('C:\Psychophysics\assignLEDs*.txt')
+LEDfileName = dir('C:\Psychophysics\assignLEDs*.txt');
 LED.info = readtable(LEDfileName.name,'HeaderLines',0,'ReadVariableNames',1);
     fopen(ardLED); %when opening the connection is causes the led to go white
 
