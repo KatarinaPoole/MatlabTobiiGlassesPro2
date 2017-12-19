@@ -12,7 +12,7 @@ ardLED = serial('COM4','BaudRate',115200); % might be able to keep this open wit
 LEDfileName = dir('C:\Psychophysics\assignLEDs*.txt');
 LED.info = readtable(LEDfileName.name,'HeaderLines',0,'ReadVariableNames',1);
     fopen(ardLED); %when opening the connection is causes the led to go white
-
+LEDcontrol('Location','off')
 
 %uninitialise
 %     fclose(ardLED);

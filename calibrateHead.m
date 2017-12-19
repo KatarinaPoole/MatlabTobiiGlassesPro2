@@ -1,23 +1,8 @@
 % Calibrate Head Tracking in Tobii for the Psychophsyics Booth
-clear all
+clear all; close all
+instrreset;
 % Initialisation
 % initialiseLEDs;
-
-% system('python livestream_data.py clicks') % to check python functions
-
-% A quick way to check Tobii is all connected
-tobiiTalk = udp('[fe80::76fe:48ff:fe19:fbaf]',49152); %the address and port
-keepAlive = jsonencode(struct('op','start','type','live.data.unicast',...
-    'key','staying_alive_staying_alive'));
-fopen(tobiiTalk);
-fwrite(tobiiTalk,keepAlive)
-checkonTobii = fscanf(tobiiTalk,'%s');
-if ~isempty(checkonTobii)
-    disp('Tobii connected')
-else
-    error('Tobii not connected, unconnect to VPN') %check if on VPN (could potential affect it)
-end
-fclose(tobiiTalk); clear checkonTobii
 
 % Variables
 noReps = 3; %change to increase or decrease reliability
@@ -47,11 +32,53 @@ if isempty(dir('C:\Psychophysics\HeadCalibrations\*.mat')) %change this if loop
 else
     load(sprintf('%s','C:\Psychophysics\HeadCalibrations\',date,'_temp_Head_Calibration.mat'))
 end
-
+% 
+% Check above calibration
 disp('Checking calibration')
-% Check calibration
-% [~,~,currAngle,currAccRoll,currAccPitch] = getHeadwithPython(calib,10,[],[]);
+[~,~,currAngle,currAccRoll,currAccPitch] = getHeadwithPython(calib,10,[],[]);
 
+disp('Time for all the repeats')
+noReps = 1;
+KbStrokeWait;
+calibResponses = zeros(4,noReps,noLocs);
+for currRep = 1:noReps
+    for currLoc = 1:noLocs
+        disp(sprintf('%s','Please look to the location of ',...
+            num2str(locations.Azimuth(currLoc)),' in azimuth and ',...
+            num2str(locations.Elevation(currLoc)),' in elevation and press key when ready'))
+        KbStrokeWait;
+        [responseFBAz,responseFBEle,currAngle] = getHeadwithPython(calib,...
+            'clicks',locations.Azimuth(currLoc),locations.Elevation(currLoc));
+        calibResponses(:,currRep,currLoc) = [locations.Azimuth(currLoc),...
+            responseFBAz,locations.Elevation(currLoc),responseFBEle];
+    end
+end
+save(sprintf('%s','C:\Psychophysics\HeadCalibrations\',date,'calibResponses.mat'),'calibResponses')
+
+% Then make adjustments based on reponse and actual location
+%
+% for currLoc = 1:noLocs
+%     meanResps = mean(calibResponses(:,:,currLoc),2);
+%     meanResps(2) = -meanResps(2); %put in just for now, get rid after next calib
+%     
+% end
+% 
+
+% % Insert angle to X Y coordinates with geoTrans here when have time 
+% Also write a way to monitor the calibration process to see if subject is
+% doing what you want them to do
+
+
+
+
+
+
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Run throuh all the calibration locations and get reponse angles for each
 % of them
 % figure('Name','One repeat responses');
@@ -77,32 +104,23 @@ disp('Checking calibration')
 % end
 % legend('X Angle','Y Angle','Response Az','Response Ele')
 
-disp('Time for all the repeats')
-KbStrokeWait;
-calibResponses = zeros(4,noReps,noLocs);
-for currRep = 1:noReps
-    for currLoc = 1:noLocs
-        disp(sprintf('%s','Please look to the location of ',...
-            num2str(locations.Azimuth(currLoc)),' in azimuth and ',...
-            num2str(locations.Elevation(currLoc)),' in elevation and press key when ready'))
-        KbStrokeWait;
-        [responseFBAz,responseFBEle,currAngle] = getHeadwithPython(calib,...
-            'clicks',locations.Azimuth(currLoc),locations.Elevation(currLoc));
-        calibResponses(:,currRep,currLoc) = [locations.Azimuth(currLoc),...
-            responseFBAz,locations.Elevation(currLoc),responseFBEle];
-    end
-end
-save(sprintf('%s','C:\Psychophysics\HeadCalibrations\',date,'calibResponses.mat'),'calibResponses')
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Then make adjustments based on reponse and actual location
-
-for currLoc = 1:noLocs
-    meanResps = mean(calibResponses(:,:,currLoc),2);
-    meanResps(2) = -meanResps(2); %put in just for now, get rid after next calib
-    
-end
-
-
-% % Insert angle to X Y coordinates with geoTrans here when have time 
-% Also write a way to monitor the calibration process to see if subject is
-% doing what you want them to do
+% Debug Tools %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+system('python livestream_data_live.py') % to check python functions
+% 
+% % A quick way to check Tobii is all connected
+% tobiiTalk = udp('[fe80::76fe:48ff:fe19:fbaf]',49152); %the address and port
+% keepAlive = jsonencode(struct('op','start','type','live.data.unicast',...
+%     'key','staying_alive_staying_alive'));
+% fopen(tobiiTalk);
+% pause(2);
+% fwrite(tobiiTalk,keepAlive)
+% checkonTobii = fscanf(tobiiTalk,'%s');
+% if ~isempty(checkonTobii)
+%     disp('Tobii connected')
+% else
+%     error('Tobii not connected, check firewall or if connected to VPN') %check if on VPN (could potential affect it)
+% end
+% fclose(tobiiTalk); clear checkonTobii
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

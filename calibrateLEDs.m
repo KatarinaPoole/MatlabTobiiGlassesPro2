@@ -41,15 +41,15 @@ for currLoc = 1:size(noNanlocations,2)
     % Make the table
     tabLocAz(currLoc) = noNanlocations(currLoc,1);
     tabLocEle(currLoc) = noNanlocations(currLoc,2);
-    try
+%     try
     tabR(currLoc) = currPins(find(contains(Colour(currPins),'R')));
-    end
-    try
+%     end
+%     try
     tabG(currLoc) = currPins(find(contains(Colour(currPins),'G')));
-    end
-    try
+%     end
+%     try
     tabB(currLoc) = currPins(find(contains(Colour(currPins),'B')));
-    end
+%     end
 end
 
 table = [tabLocAz', tabLocEle', tabR', tabG', tabB'];

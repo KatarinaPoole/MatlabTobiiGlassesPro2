@@ -1,5 +1,5 @@
 % Arduino LED control in terms of location angle
-function LEDcontrol (Mode,onoff,LEDcolour,LocAz,LocEle)
+function LEDcontrol(Mode,onoff,LEDcolour,LocAz,LocEle)
 global ardLED LED
 if exist('ardLED','var')
     switch onoff

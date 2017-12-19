@@ -1,6 +1,6 @@
 %% Function to get the head response angle in azimuth and elevation
 function [responseFBAz,responseFBEle,currAngle,...
-    currAccRoll,currAccPitch] = getHeadwithPython(calib,responseType,LocAz,LocEle)
+    currAccRoll,currAccPitch] = getHeadwithPython(calib,responseType)
 
 
 % Runs python code that grabs the livestream data (second argument is
@@ -10,7 +10,7 @@ if isstring(responseType)==0
 end
 tic
 disp('Recording')
-rawtobiiData = python('livestream_data.py',responseType);
+    rawtobiiData = python('livestream_data.py',responseType);
 toc
 
 % Sorting out the incoming data
@@ -62,11 +62,7 @@ end
 % Get the sampling rates (should pick a value at some point to standardise
 % it but currently just using the mode
 GyHz = mode(diff(GyTs));
-AccHz = mode(diff(AccTs));
 dt = GyHz*1e-6; % get the sample rate in seconds for the integration
-
-% Chuck in a low pass filter on Gy(:,2)
-
 
 % Smoooooooothing
 oldAcc = Acc;
@@ -91,10 +87,12 @@ end
 
 % Calculates actual angle using Gyroscope and Acc Data (Complimentary
 % Filter)
-for idx = 1:length(Gy)-2
-    currAngle.X(idx+1) = ((0.97*(currAngle.X(idx)+(Gy(idx+1,1)*dt)))+(0.03*currAccPitch(idx+1)));
-    currAngle.Y(idx+1) = (currAngle.Y(idx) + (Gy(idx+1,2)*dt))-calib.Y; % a botch job to cancel out the drift
-    currAngle.Z(idx+1) = ((0.97*(currAngle.Z(idx) + (Gy(idx+1,3)*dt)))+(0.03*currAccRoll(idx+1)));
+%Added plus 15 to chop off the wierd begininng of the gy data
+adjustGy = 10;
+for idx = 1:length(Gy)-2-adjustGy % Takes off the beginning
+    currAngle.X(idx+1) = ((0.97*(currAngle.X(idx)+(Gy(idx+1+adjustGy,1)*dt)))+(0.03*currAccPitch(idx+1+adjustGy)));
+    currAngle.Y(idx+1) = (currAngle.Y(idx) + (Gy(idx+1+adjustGy,2)*dt))-calib.Y; % a botch job to cancel out the drift
+    currAngle.Z(idx+1) = ((0.97*(currAngle.Z(idx) + (Gy(idx+1+adjustGy,3)*dt)))+(0.03*currAccRoll(idx+1+adjustGy)));
 end
 
 % Gets a mean response angle looking at last few data points
@@ -104,16 +102,16 @@ responseFBAz = -mean(currAngle.Y(end-5:end)); % Need to sign flip
 responseFBEle = mean(currAngle.X(end-5:end));
 toc
 % Plots if you want it
-
+% 
 % figure;%('Name',sprintf('%s',num2str(LocAz),' degress in Azimuth and ',num2str(LocEle),...
-%     'degrees in Elevation'))
+% %     'degrees in Elevation'))
 % t = 0:dt:((length(currAngle.X)-1)*dt);
 % 
 % plot(t,currAngle.X); hold on
 % plot(t,currAngle.Y);
 % plot(t,currAngle.Z);
-% plot(t,currAccRoll);
-% plot(t,currAccPitch);
+% % plot(t,currAccRoll);
+% % plot(t,currAccPitch);
 % % plot(t,Gy(2:end,1)); plot(t,Gy(2:end,2)); plot(t,Gy(2:end,3));
 % legend('X Pitch','Y Yaw','Z Roll','Roll','Pitch'); hold on
 % title('Tobii MEMs Data with Complimentary Filter')
