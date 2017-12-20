@@ -14,7 +14,7 @@ LEDcontrol('Location','on','white',0,0)
 GetClicks()
 LEDcontrol('Location','off')
 [responseFBAz,responseFBEle,currAngle,...
-    currAccRoll,currAccPitch] = getHeadwithPython(calib,'clicks');
+    currAccRoll,currAccPitch] = getHeadwithPython(calib,0.2);
 LocAz = round(responseFBAz/7.5)*7.5;
 LocEle = round(responseFBEle/7.5)*7.5;
 if LocAz > 52.5 
