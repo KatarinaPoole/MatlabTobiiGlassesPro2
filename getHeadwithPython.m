@@ -1,18 +1,24 @@
 %% Function to get the head response angle in azimuth and elevation
 function [responseFBAz,responseFBEle,currAngle,...
     currAccRoll,currAccPitch] = getHeadwithPython(calib,responseType)
-
+% profile on
 
 % Runs python code that grabs the livestream data (second argument is
 % calibTime or 'clicks'
-if isstring(responseType)==0
-    responseType = num2str(responseType);
+if responseType ~= 'clicks'
+    pythonInp1 = 'time';
+    pythonInp2 = num2str(responseType);
+else
+    pythonInp1 = 'clicks';
+    pythonInp2 = '0';
 end
 tic
 disp('Recording')
-    rawtobiiData = python('livestream_data.py',responseType);
-toc
+%     system('python stayingalive.py') %Take about a second so may only need this at the begininng of most responses
 
+    rawtobiiData = python('livestream_data.py',pythonInp1, pythonInp2);
+toc
+ 
 % Sorting out the incoming data
 tic
 rawtobiiData = strsplit(rawtobiiData)';
@@ -77,8 +83,16 @@ end
 % Resamples data as Acc and Gy have slightly differing sample rates
 p = max([length(Gy) length(Acc)]);
 q = min([length(Gy) length(Acc)]);
-Acc = resample(Acc,q,p); %will always want to resample Acc
-
+if length(Acc) >= length(Gy)
+    Acc = resample(Acc,q,p); %will always want to resample Acc as we are downsampling to GyHz
+else
+    Acc = resample(Acc,p,q); % yet to avoid errors due to pulling uneven amount of Gy and Acc data put this in
+end
+oldAcc = Acc;
+oldGy = Gy; 
+% And then chop off the end of the biggest one to avoid indexing problems
+% or do this before the resampling
+    
 % Calculates the pitch and roll from Acc data
 for i = 1:length(Acc)-1
     currAccPitch(i) = (atan2(Acc(i,2), Acc(i,3)) * 180/pi)+96-calib.Pitch;%added a random offest
@@ -102,11 +116,11 @@ responseFBAz = -mean(currAngle.Y(end-5:end)); % Need to sign flip
 responseFBEle = mean(currAngle.X(end-5:end));
 toc
 % Plots if you want it
-% 
+%
 % figure;%('Name',sprintf('%s',num2str(LocAz),' degress in Azimuth and ',num2str(LocEle),...
 % %     'degrees in Elevation'))
 % t = 0:dt:((length(currAngle.X)-1)*dt);
-% 
+%
 % plot(t,currAngle.X); hold on
 % plot(t,currAngle.Y);
 % plot(t,currAngle.Z);
@@ -118,5 +132,7 @@ toc
 % xlabel('Time(s)')
 % ylabel('Angle (degrees)')
 % hold off
+% profile off
+% profile viewer
 
 end

@@ -12,6 +12,7 @@ pause(2)
 while 1
 LEDcontrol('Location','on','white',0,0)
 GetClicks()
+LEDcontrol('Location','off')
 [responseFBAz,responseFBEle,currAngle,...
     currAccRoll,currAccPitch] = getHeadwithPython(calib,'clicks');
 LocAz = round(responseFBAz/7.5)*7.5;
@@ -21,7 +22,6 @@ if LocAz > 52.5
 elseif LocAz < -52.5
     LocAz = -52.5;
 end
-LEDcontrol('Location','off')
 LEDcontrol('Location','on','green',LocAz,0)
 pause(1)
 LEDcontrol('Location','off')

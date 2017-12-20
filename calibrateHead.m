@@ -2,14 +2,14 @@
 clear all; close all
 instrreset;
 % Initialisation
-% initialiseLEDs;
-
+initialiseLEDs;
+pause(2);
 % Variables
-noReps = 3; %change to increase or decrease reliability
 locations = readtable('CalibrationLocations.txt');
 noLocs = size(locations,1);
 currRow = 1;
 clicks = 0;
+noReps = 2;
 
 % Init calib parameters
 calib.Pitch = 0;
@@ -21,7 +21,7 @@ calib.Y = 0;
 %Get first response and new calibration parameters
 if isempty(dir('C:\Psychophysics\HeadCalibrations\*.mat')) %change this if loop
     LEDcontrol(0,0,'on')
-    [~,~,currAngle,currAccRoll,currAccPitch] = getHeadwithPython(calib,5,[],[]);
+    [~,~,currAngle,currAccRoll,currAccPitch] = getHeadwithPython(calib,5);
     t = 1:length(currAngle.X);
     calib.Pitch = mean(currAccPitch);
     calib.Roll = mean(currAccRoll);
@@ -32,23 +32,31 @@ if isempty(dir('C:\Psychophysics\HeadCalibrations\*.mat')) %change this if loop
 else
     load(sprintf('%s','C:\Psychophysics\HeadCalibrations\',date,'_temp_Head_Calibration.mat'))
 end
-% 
-% Check above calibration
-disp('Checking calibration')
-[~,~,currAngle,currAccRoll,currAccPitch] = getHeadwithPython(calib,10,[],[]);
+%
+% % Check above calibration
+% disp('Checking calibration')
+% [~,~,currAngle,currAccRoll,currAccPitch] = getHeadwithPython(calib,10,[],[]);
 
-disp('Time for all the repeats')
-noReps = 1;
+% To avoid just getting one tobii cell need to presend a keep alive message
+disp('Time for all the repeats, press any key when ready')
 KbStrokeWait;
 calibResponses = zeros(4,noReps,noLocs);
 for currRep = 1:noReps
     for currLoc = 1:noLocs
-        disp(sprintf('%s','Please look to the location of ',...
-            num2str(locations.Azimuth(currLoc)),' in azimuth and ',...
-            num2str(locations.Elevation(currLoc)),' in elevation and press key when ready'))
-        KbStrokeWait;
-        [responseFBAz,responseFBEle,currAngle] = getHeadwithPython(calib,...
-            'clicks',locations.Azimuth(currLoc),locations.Elevation(currLoc));
+        % Light centre light
+        LEDcontrol('Location','on','white',0,0);
+        GetClicks();
+        if currRep == 1 && currLoc == 1
+            system('python stayingalive.py'); %Take about a second so may only need this at the begininng of most responses
+        end
+        LEDcontrol('Location','off');
+        % Light up target light
+        pause(0.1)
+        LEDcontrol('Location','on','white',locations.Azimuth(currLoc),...
+            locations.Elevation(currLoc));
+        [responseFBAz,responseFBEle] = getHeadwithPython(calib,...
+            'clicks')
+        LEDcontrol('Location','off');
         calibResponses(:,currRep,currLoc) = [locations.Azimuth(currLoc),...
             responseFBAz,locations.Elevation(currLoc),responseFBEle];
     end
@@ -60,11 +68,11 @@ save(sprintf('%s','C:\Psychophysics\HeadCalibrations\',date,'calibResponses.mat'
 % for currLoc = 1:noLocs
 %     meanResps = mean(calibResponses(:,:,currLoc),2);
 %     meanResps(2) = -meanResps(2); %put in just for now, get rid after next calib
-%     
+%
 % end
-% 
+%
 
-% % Insert angle to X Y coordinates with geoTrans here when have time 
+% % Insert angle to X Y coordinates with geoTrans here when have time
 % Also write a way to monitor the calibration process to see if subject is
 % doing what you want them to do
 
@@ -107,8 +115,8 @@ save(sprintf('%s','C:\Psychophysics\HeadCalibrations\',date,'calibResponses.mat'
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Debug Tools %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-system('python livestream_data_live.py') % to check python functions
-% 
+% system('python livestream_data_live.py') % to check python functions
+%
 % % A quick way to check Tobii is all connected
 % tobiiTalk = udp('[fe80::76fe:48ff:fe19:fbaf]',49152); %the address and port
 % keepAlive = jsonencode(struct('op','start','type','live.data.unicast',...
