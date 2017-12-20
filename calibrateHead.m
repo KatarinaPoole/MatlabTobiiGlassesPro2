@@ -41,6 +41,7 @@ end
 disp('Time for all the repeats, press any key when ready')
 KbStrokeWait;
 calibResponses = zeros(4,noReps,noLocs);
+% Randomise the locations
 for currRep = 1:noReps
     for currLoc = 1:noLocs
         % Light centre light
@@ -55,7 +56,9 @@ for currRep = 1:noReps
         LEDcontrol('Location','on','white',locations.Azimuth(currLoc),...
             locations.Elevation(currLoc));
         [responseFBAz,responseFBEle] = getHeadwithPython(calib,...
-            'clicks')
+            'clicks');
+        fprintf('%s %s %s %s %s\n','Subject response location was at ',num2str(responseFBAz),...
+            ' degrees in Azimuth and ',num2str(responseFBAz),' degrees in Elevation.')
         LEDcontrol('Location','off');
         calibResponses(:,currRep,currLoc) = [locations.Azimuth(currLoc),...
             responseFBAz,locations.Elevation(currLoc),responseFBEle];
