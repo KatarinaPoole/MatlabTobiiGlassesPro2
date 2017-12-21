@@ -1,4 +1,6 @@
 % Calibrate Head Tracking in Tobii for the Psychophsyics Booth
+% will probably need to adjust for the fact that the leds are above the
+% speakers for the elevation responses
 clear all; close all
 instrreset;
 % Initialisation
@@ -9,7 +11,7 @@ locations = readtable('CalibrationLocations.txt');
 noLocs = size(locations,1);
 currRow = 1;
 clicks = 0;
-noReps = 2;
+noReps = 8;
 
 % Init calib parameters
 calib.Pitch = 0;
@@ -19,7 +21,11 @@ calib.Z = 0;
 calib.Y = 0;
 
 %Get first response and new calibration parameters
-if isempty(dir('C:\Psychophysics\HeadCalibrations\*.mat')) %change this if loop
+try
+    load(sprintf('%s','C:\Psychophysics\HeadCalibrations\',date,'_temp_Head_Calibration.mat'))
+catch
+    disp('Please put the glasses on a flat surface and press any key when ready')
+    KbStrokeWait;
     LEDcontrol(0,0,'on')
     [~,~,currAngle,currAccRoll,currAccPitch] = getHeadwithPython(calib,5);
     t = 1:length(currAngle.X);
@@ -29,8 +35,6 @@ if isempty(dir('C:\Psychophysics\HeadCalibrations\*.mat')) %change this if loop
     calib.Y = fitvars(1); % botch way of canceling out the drift
     disp('Applying the calib')
     save(sprintf('%s','C:\Psychophysics\HeadCalibrations\',date,'_temp_Head_Calibration.mat'),'calib')
-else
-    load(sprintf('%s','C:\Psychophysics\HeadCalibrations\',date,'_temp_Head_Calibration.mat'))
 end
 %
 % % Check above calibration
@@ -38,30 +42,33 @@ end
 % [~,~,currAngle,currAccRoll,currAccPitch] = getHeadwithPython(calib,10,[],[]);
 
 % To avoid just getting one tobii cell need to presend a keep alive message
-disp('Time for all the repeats, press any key when ready')
+disp('Response calibration time, press any key when ready and click the mouse when sitting and looking at the centre light')
 KbStrokeWait;
 calibResponses = zeros(4,noReps,noLocs);
-% Randomise the locations
+count = 1;
 for currRep = 1:noReps
+    % Randomise the locations
+    LocOrder = randperm(noLocs);
     for currLoc = 1:noLocs
         % Light centre light
         LEDcontrol('Location','on','white',0,0);
         GetClicks();
-        if currRep == 1 && currLoc == 1
+        if count == 1
             system('python stayingalive.py'); %Take about a second so may only need this at the begininng of most responses
         end
         LEDcontrol('Location','off');
         % Light up target light
         pause(0.1)
-        LEDcontrol('Location','on','white',locations.Azimuth(currLoc),...
-            locations.Elevation(currLoc));
+        LEDcontrol('Location','on','white',locations.Azimuth(LocOrder(currLoc)),...
+            locations.Elevation(LocOrder(currLoc)));
         [responseFBAz,responseFBEle] = getHeadwithPython(calib,...
             'clicks');
         fprintf('%s %s %s %s %s\n','Subject response location was at ',num2str(responseFBAz),...
-            ' degrees in Azimuth and ',num2str(responseFBAz),' degrees in Elevation.')
+            ' degrees in Azimuth and ',num2str(responseFBEle),' degrees in Elevation.')
         LEDcontrol('Location','off');
-        calibResponses(:,currRep,currLoc) = [locations.Azimuth(currLoc),...
-            responseFBAz,locations.Elevation(currLoc),responseFBEle];
+        calibResponses(:,currRep,LocOrder(currLoc)) = [locations.Azimuth(LocOrder(currLoc)),...
+            responseFBAz,locations.Elevation(LocOrder(currLoc)),responseFBEle];
+        count = count +1;
     end
 end
 save(sprintf('%s','C:\Psychophysics\HeadCalibrations\',date,'calibResponses.mat'),'calibResponses')

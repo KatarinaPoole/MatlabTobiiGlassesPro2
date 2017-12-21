@@ -113,7 +113,7 @@ end
 % Yaw = currAngle.Y, left is positive.
 responseFBAz = -mean(currAngle.Y(end-5:end)); % Need to sign flip
 % Ele = currAngle.X
-responseFBEle = mean(currAngle.X(end-5:end));
+responseFBEle = -mean(currAngle.X(end-5:end)); % also need to sign flip
 toc
 % Plots if you want it
 %

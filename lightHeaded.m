@@ -1,32 +1,37 @@
 % Little script to test the calibrate of head response from tobii with the
 % LEDs
-% Currently not working as hard to get a small sample of the response with
-% Gy in so find a way to livestream the data from python?
+% not working that well since need to constantly livestream the data
+% otherwise it misses movements and therefore the tracking isn't accurate
 initialiseLEDs;
 % Load up the calibration
 load(sprintf('%s','C:\Psychophysics\HeadCalibrations\',date,'_temp_Head_Calibration.mat'))
 pause(2)
-
-% to avoid to short of a response (so that there is no Gy data, could start
-% recording from longer before?)
-while 1
+system('python stayingalive.py'); %Take about a second so may only need this at the begininng of most responses
 LEDcontrol('Location','on','white',0,0)
 GetClicks()
+% to avoid to short of a response (so that there is no Gy data, could start
+% recording from longer before?)
+currAz = 0;
+currEle = 0;
+while 1
 LEDcontrol('Location','off')
 [responseFBAz,responseFBEle,currAngle,...
-    currAccRoll,currAccPitch] = getHeadwithPython(calib,0.2);
-LocAz = round(responseFBAz/7.5)*7.5;
-LocEle = round(responseFBEle/7.5)*7.5;
+    currAccRoll,currAccPitch] = getHeadwithPython(calib,0.5);
+currAz = currAz + responseFBAz;
+currEle = currEle + responseFBEle;
+LocAz = round(currAz/7.5)*7.5;
+LocEle = round(currEle/7.5)*7.5;
 if LocAz > 52.5 
     LocAz = 52.5;
 elseif LocAz < -52.5
     LocAz = -52.5;
 end
 LEDcontrol('Location','on','green',LocAz,0)
-pause(1)
-LEDcontrol('Location','off')
 end
 
+
+% In order to get the eyes to work need 
+% Either 8m or 94cm away
 
 
 
