@@ -1,6 +1,6 @@
 %% Function to get the head response angle in azimuth and elevation
-function [responseFBAz,responseFBEle,currAngle,...
-    currAccRoll,currAccPitch] = getHeadwithPython(calib,responseType)
+function [Gp3,Gp3Ts,responseFBAz,responseFBEle,currAngle,...
+    currAccRoll,currAccPitch] = getHeadandEyeswithPython(calib,responseType)
 % profile on
 
 % Runs python code that grabs the livestream data (second argument is
@@ -66,32 +66,44 @@ for currRow = 1:length(tobiiData)
             Gp3Ts(currGp3Row) = str2double(tobiiData{currRow}...
                 (7:strfind(tobiiData{currRow},',')-1)); %gets the Ts
             currGp3 = strsplit(tobiiData{currRow},','); %splits the Gp3 Data
-            % Definitely need to put in a line that checks the status as
-            % the eye tracking data is way more fickle
-            if length(currGp3)==5 %to ignore any lost data
-                Gp3(currGp3Row,1) = str2double(currAcc{3}(strfind(currAcc{3},'[')+1:end)); %x Acc
-                Gp3(currGp3Row,2) = str2double(currAcc{4}); %y Acc
-                Gp3(currGp3Row,3) = str2double(currAcc{5}(1:end-2)); %z Acc
+            if length(currGp3)==6 %to ignore any lost data
+                Gp3(currGp3Row,1) = str2double(currGp3{4}(strfind(currGp3{4},'[')+1:end)); %x 
+                Gp3(currGp3Row,2) = str2double(currGp3{5}); %y
+                Gp3(currGp3Row,3) = str2double(currGp3{6}(1:end-2)); %z 
+                % Non zero value means error - could be blinking
+                Gp3(currGp3Row,4) = str2double(currGp3{2}(5)); % Gets the status as well as the eye tracking is a bit more fickle
                 currGp3Row = currGp3Row + 1;
             end
         end
     end
 end
 
+% If status is nonzero make Gp3 Nans
+for i = 1:length(Gp3)
+    if Gp3(i,4) ~= 0
+        Gp3(i,1:3) = NaN;
+    end
+end
+
 % Get the sampling rates (should pick a value at some point to standardise
 % it but currently just using the mode
+Gp3Hz = mode(diff(Gp3Ts));
 GyHz = mode(diff(GyTs));
 dt = GyHz*1e-6; % get the sample rate in seconds for the integration
-
+dtGp3 = Gp3Hz*1e-6;
 % Smoooooooothing
 oldAcc = Acc;
 oldGy = Gy;
+oldGp3 = Gp3;
 for i = 1:size(oldAcc,2)
     Acc(:,i) = smooth(oldAcc(:,i),0.02,'moving'); %smoothing on Acc data is it is noisy
 end
 for i = 1:size(oldGy,2)
     Gy(:,i) = smooth(oldGy(:,i),0.02,'moving'); %smoothing on Acc data is it is noisy
 end
+% for i = 1:size(oldGp3,2)-1
+%     Gp3(:,i) = smooth(oldGp3(:,i),0.02,'moving'); %smoothing on Acc data is it is noisy
+% end
 
 % Resamples data as Acc and Gy have slightly differing sample rates
 p = max([length(Gy) length(Acc)]);

@@ -4,7 +4,7 @@
 clear all; close all
 instrreset;
 % Initialisation
-initialiseLEDs;
+% initialiseLEDs;
 pause(2);
 % Variables
 locations = readtable('CalibrationLocations.txt');
