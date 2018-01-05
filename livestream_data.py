@@ -20,6 +20,8 @@ clicks = 0
 # Keep-alive message content used to request live data and live video streams
 KA_DATA_STR = "{\"type\": \"live.data.unicast\", \"key\": \"some_GUID\", \"op\": \"start\"}"
 KA_DATA_MSG = KA_DATA_STR.encode() #need to encode it to work with python 3.6
+KA_VIDEO_STR = "{\"type\": \"live.video.unicast\", \"key\": \"some_other_GUID\", \"op\": \"start\"}"
+KA_VIDEO_MSG = KA_VIDEO_STR.encode() 
 ## Functions
 # Create UDP socket
 def mksock(peer):
@@ -57,6 +59,10 @@ if __name__ == "__main__":
 		data_socket.bind(('',PORT)) # Need this bind to get python to work with Windows
 		td = threading.Timer(0, send_keepalive_msg, [data_socket, KA_DATA_MSG, peer])
 		td.start()
+	# Create socket which will send a keep alive message for the live video stream 
+		video_socket = mksock(peer)
+		tv = threading.Timer(0, send_keepalive_msg, [video_socket, KA_VIDEO_MSG, peer])
+		tv.start()
 		while running:
 			# Read live data and add it to variable
 			data, address = data_socket.recvfrom(1024)
