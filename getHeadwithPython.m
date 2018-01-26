@@ -1,6 +1,6 @@
 %% Function to get the head response angle in azimuth and elevation
 function [responseFBAz,responseFBEle,currAngle,...
-    currAccRoll,currAccPitch] = getHeadwithPython(calib,responseType)
+    currAccRoll,currAccPitch] = getHeadwithPython(calib,responseType,trialNo)
 % profile on
 
 % Runs python code that grabs the livestream data (second argument is
@@ -18,7 +18,12 @@ disp('Recording')
 
     rawtobiiData = python('livestream_data.py',pythonInp1, pythonInp2);
 toc
- 
+
+if isempty(trialNo) ~= 1
+    sendEventTobii(trialNo,'ResponseEnd')
+end
+
+
 % Sorting out the incoming data
 tic
 rawtobiiData = strsplit(rawtobiiData)';

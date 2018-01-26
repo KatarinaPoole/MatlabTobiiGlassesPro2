@@ -1,6 +1,6 @@
 %% Function to get the head response angle in azimuth and elevation
 function [Gp3,Gp3Ts,responseFBAz,responseFBEle,currAngle,...
-    currAccRoll,currAccPitch] = getHeadandEyeswithPython(calib,responseType)
+    currAccRoll,currAccPitch] = getHeadandEyeswithPython(calib,responseType)%,trialNo)
 % profile on
 
 % Runs python code that grabs the livestream data (second argument is
