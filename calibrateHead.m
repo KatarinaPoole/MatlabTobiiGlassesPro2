@@ -71,6 +71,8 @@ for currRep = 1:noReps
 end
 save(sprintf('%s','C:\Psychophysics\HeadCalibrations\',date,'calibResponses.mat'),'calibResponses')
 
+analyseHeadCalib(sprintf('%s','C:\Psychophysics\HeadCalibrations\',date,'calibResponses.mat'))
+
 % Then make adjustments based on reponse and actual location
 %
 % for currLoc = 1:noLocs
