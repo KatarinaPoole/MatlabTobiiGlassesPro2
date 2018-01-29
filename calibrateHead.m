@@ -1,10 +1,8 @@
 % Calibrate Head Tracking in Tobii for the Psychophsyics Booth
-% will probably need to adjust for the fact that the leds are above the
-% speakers for the elevation responses
 clear all; close all
 instrreset;
 % Initialisation
-% initialiseLEDs;
+initialiseLEDs;
 pause(2);
 % Variables
 locations = readtable('CalibrationLocations.txt');
@@ -27,13 +25,13 @@ catch
     disp('Please put the glasses on a flat surface and press any key when ready')
     KbStrokeWait;
     LEDcontrol(0,0,'on')
-    [~,~,currAngle,currAccRoll,currAccPitch] = getHeadwithPython(calib,5);
+    [~,~,currAngle,currAccRoll,currAccPitch] = getHeadwithPython(calib,10,0);
     t = 1:length(currAngle.X);
     calib.Pitch = mean(currAccPitch);
     calib.Roll = mean(currAccRoll);
     fitvars = polyfit(t,currAngle.Y,1);
     calib.Y = fitvars(1); % botch way of canceling out the drift
-    disp('Applying the calib')
+    disp('Saving calibration')
     save(sprintf('%s','C:\Psychophysics\HeadCalibrations\',date,'_temp_Head_Calibration.mat'),'calib')
 end
 %
@@ -45,7 +43,7 @@ end
 disp('Response calibration time, press any key when ready and click the mouse when sitting and looking at the centre light')
 KbStrokeWait;
 calibResponses = zeros(4,noReps,noLocs);
-count = 1;
+currCount = 1;
 for currRep = 1:noReps
     % Randomise the locations
     LocOrder = randperm(noLocs);
@@ -53,7 +51,7 @@ for currRep = 1:noReps
         % Light centre light
         LEDcontrol('Location','on','white',0,0);
         GetClicks();
-        if count == 1
+        if currCount == 1
             system('python stayingalive.py'); %Take about a second so may only need this at the begininng of most responses
         end
         LEDcontrol('Location','off');
@@ -62,13 +60,13 @@ for currRep = 1:noReps
         LEDcontrol('Location','on','white',locations.Azimuth(LocOrder(currLoc)),...
             locations.Elevation(LocOrder(currLoc)));
         [responseFBAz,responseFBEle] = getHeadwithPython(calib,...
-            'clicks');
+            'clicks',0);
         fprintf('%s %s %s %s %s\n','Subject response location was at ',num2str(responseFBAz),...
             ' degrees in Azimuth and ',num2str(responseFBEle),' degrees in Elevation.')
         LEDcontrol('Location','off');
         calibResponses(:,currRep,LocOrder(currLoc)) = [locations.Azimuth(LocOrder(currLoc)),...
             responseFBAz,locations.Elevation(LocOrder(currLoc)),responseFBEle];
-        count = count +1;
+        currCount = currCount +1;
     end
 end
 save(sprintf('%s','C:\Psychophysics\HeadCalibrations\',date,'calibResponses.mat'),'calibResponses')

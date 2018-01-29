@@ -39,28 +39,3 @@ while true
         break
     end
 end
-
-
-% A way to test? Need to fix why after a while itll lag, soemthign to do
-% with the output buffer?? (Currently put code in to flush it when turned
-% off, but need to close and open to get it working again - so thats an
-% easy fix
-fclose(ardLED);
-fopen(ardLED);
-pause(2);
-count = 1;
-% while 1
-    for currCol = 1:length(colours)
-        for currLoc = 1:length(LED.info.LocAz)
-            LEDcontrol('Location','on',colours{currCol},...
-                LED.info.LocAz(currLoc),...
-                LED.info.LocEle(currLoc))
-        end
-%         count = count + 1;
-%         if count == 5
-%             break
-%         end
-        pause(0.3);
-        LEDcontrol('Location','off')
-    end
-% end

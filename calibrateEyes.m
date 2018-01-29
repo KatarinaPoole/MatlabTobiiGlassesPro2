@@ -4,7 +4,8 @@ clear all; close all
 instrreset;
 
 % Intialisation
-initialisedLEDs;
+initialiseLEDs;
+pause(2);
 calibrateTobii('Test')
 
 % Variables
@@ -13,6 +14,24 @@ noLocs = size(locations,1);
 currRow = 1;
 clicks = 0;
 noReps = 3;
+
+%Get first response and new calibration parameters
+try
+    load(sprintf('%s','C:\Psychophysics\HeadCalibrations\',date,'_temp_Head_Calibration.mat'))
+catch
+    disp('Please put the glasses on a flat surface and press any key when ready')
+    KbStrokeWait;
+    LEDcontrol(0,0,'on')
+    [~,~,currAngle,currAccRoll,currAccPitch] = getHeadwithPython(calib,5);
+    t = 1:length(currAngle.X);
+    calib.Pitch = mean(currAccPitch);
+    calib.Roll = mean(currAccRoll);
+    fitvars = polyfit(t,currAngle.Y,1);
+    calib.Y = fitvars(1); % botch way of canceling out the drift
+    disp('Applying the calib')
+    save(sprintf('%s','C:\Psychophysics\HeadCalibrations\',date,'_temp_Head_Calibration.mat'),'calib')
+end
+
 
 disp('Response calibration time, press any key when ready and click the mouse when sitting and looking at the centre light')
 KbStrokeWait;
@@ -24,7 +43,7 @@ calibEyeResponses = cell(noReps,noLocs,4);
 count = 1;
 for currRep = 1:noReps
     LocOrder = randperm(noLocs);
-    for curroc = 1:noLocs
+    for currLoc = 1:noLocs
         % Light centre light
         LEDcontrol('Location','off');
         LEDcontrol('Location','on','white',0,0);
@@ -40,12 +59,12 @@ for currRep = 1:noReps
             locations.Elevation(LocOrder(currLoc)));
         [Gp3,Gp3Ts,responseFBAz,responseFBEle,currAngle] = getHeadandEyeswithPython(calib,'clicks');
         LEDcontrol('Location','off');
-        calibEyeResponses(currRep,LocOrder(currLoc),1:4) = {locations.Azimuth(LocOrder(currLoc));...
+        calibEyeResponses{currRep,LocOrder(currLoc),1:4} = {locations.Azimuth(LocOrder(currLoc));...
             locations.Elevation(LocOrder(currLoc));Gp3;Gp3Ts};
         count = count + 1;
     end
 end
-save(sprintf('%s','C:\Psychophysics\EyeCalibrations\',date,'calibEyeResponses.mat'),'calibEyeResponses')
+save(sprintf('%s','C:\Psychophysics\EyeCalibrations\',date,'calibEyeResponsesTake2.mat'),'calibEyeResponses')
 
 %Post processing of Gp3 data
 for i = 1:length(Gp3)

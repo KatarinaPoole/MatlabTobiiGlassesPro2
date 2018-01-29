@@ -19,7 +19,7 @@ disp('Recording')
     rawtobiiData = python('livestream_data.py',pythonInp1, pythonInp2);
 toc
 
-if isempty(trialNo) ~= 1
+if trialNo ~= 0
     sendEventTobii(trialNo,'ResponseEnd')
 end
 
