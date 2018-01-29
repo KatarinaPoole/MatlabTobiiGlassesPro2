@@ -34,10 +34,9 @@ catch
     disp('Saving calibration')
     save(sprintf('%s','C:\Psychophysics\HeadCalibrations\',date,'_temp_Head_Calibration.mat'),'calib')
 end
-%
-% % Check above calibration
-% disp('Checking calibration')
-% [~,~,currAngle,currAccRoll,currAccPitch] = getHeadwithPython(calib,10,[],[]);
+
+% Get participant name 
+partName = input('Please enter participant initials:   ','s');
 
 % To avoid just getting one tobii cell need to presend a keep alive message
 disp('Response calibration time, press any key when ready and click the mouse when sitting and looking at the centre light')
@@ -71,7 +70,7 @@ for currRep = 1:noReps
 end
 save(sprintf('%s','C:\Psychophysics\HeadCalibrations\',date,'calibResponses.mat'),'calibResponses')
 
-analyseHeadCalib(sprintf('%s','C:\Psychophysics\HeadCalibrations\',date,'calibResponses.mat'))
+analyseHeadCalib(sprintf('%s','C:\Psychophysics\HeadCalibrations\',date,'calibResponses.mat'),partName)
 
 % Then make adjustments based on reponse and actual location
 %

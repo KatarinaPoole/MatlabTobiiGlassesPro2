@@ -1,6 +1,7 @@
 %% Function to get the head response angle in azimuth and elevation
 function [responseFBAz,responseFBEle,currAngle,...
     currAccRoll,currAccPitch] = getHeadwithPython(calib,responseType,trialNo)
+global tformTobii %tformTobii is global so constant loading isnt needed
 % profile on
 
 % Runs python code that grabs the livestream data (second argument is
@@ -120,6 +121,19 @@ responseFBAz = -mean(currAngle.Y(end-5:end)); % Need to sign flip
 % Ele = currAngle.X
 responseFBEle = -mean(currAngle.X(end-5:end)); % also need to sign flip
 toc
+
+% Geometrically transforms resp based on calib response. Need to make sure
+% also apply the same geometric calib
+try
+    newLoc = transformPointsForward(tformTobii,[responseFBAz responseFBEle]);
+    responseFBAz = newLoc(:,1);
+    responseFBEle = newLoc(:,2);
+%     sendEventTobii(trialNo,'CalibratedHead') % A way to check recording offline
+catch
+    disp('Response is uncalibrated')
+%     sendEventTobii(trialNo,'UncalibratedHead') % A way to check recording offline
+end
+
 % Plots if you want it
 %
 % figure;%('Name',sprintf('%s',num2str(LocAz),' degress in Azimuth and ',num2str(LocEle),...
