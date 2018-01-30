@@ -16,8 +16,6 @@ noReps = 3;
 files = dir(sprintf('%s','C:\Psychophysics\HeadCalibrations\',partName));
 load(sprintf('%s','C:\Psychophysics\HeadCalibrations\',partName,'\',files(end).name))
 
-
-
 % To avoid just getting one tobii cell need to presend a keep alive message
 disp('Response calibration time, press any key when ready and click the mouse when sitting and looking at the centre light')
 KbStrokeWait;
@@ -70,6 +68,5 @@ end
 meanAzi = mean(Azi);
 meanEle = mean(Ele);
 h3 = scatter(meanAzi,meanEle,50,'filled','green');
-
 
 end
