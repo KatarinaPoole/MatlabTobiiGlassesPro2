@@ -1,5 +1,6 @@
 Azimuth	Elevation
 -90	0
+-60	0
 -45	0
 -30	0
 -15	0
@@ -7,6 +8,7 @@ Azimuth	Elevation
 15	0
 30	0
 45	0
+60	0
 90	0
 0	45
 0	30

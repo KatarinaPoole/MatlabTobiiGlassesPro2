@@ -1,7 +1,6 @@
 % Analyse the head calibration responses and will apply the appropriate
 % calibration
 function analyseHeadCalib(fileName,partName)
-% Make a plot of actual responses with should be responses.
 
 load(fileName)
 
@@ -14,30 +13,18 @@ title('Head Tracking Calibration')
 axis([ -97.5, 97.5, -22.5, 52.5])
 set(gca,'xtick',[-97.5:7.5:97.5]);
 set(gca,'ytick',[-22.5:7.5:52.5]);
-
-
-
-for currLoc = 1:size(calibResponses,3)
-    for currRep = 1:size(calibResponses,2)
-        x = reshape(calibResponses(2,currRep,:),1,size(calibResponses,3));
-        y = reshape(calibResponses(4,currRep,:),1,size(calibResponses,3));
-        h2 = scatter(x,y,15,'filled','blue'); hold on
-        Azi(currRep,:) = x;
-        Ele(currRep,:) = y;
-    end
+for currRep = 1:size(calibResponses,2)
+    x = reshape(calibResponses(2,currRep,:),1,size(calibResponses,3));
+    y = reshape(calibResponses(4,currRep,:),1,size(calibResponses,3));
+    h2 = scatter(x,y,15,'filled','blue'); hold on
+    Azi(currRep,:) = x;
+    Ele(currRep,:) = y;
 end
 meanAzi = mean(Azi);
 meanEle = mean(Ele);
 h3 = scatter(meanAzi,meanEle,50,'filled','red');
 
 % Geometric correction
-% Might need to not use the 0 calibration as this is where the person isn't
-% moving their head at all soi wouldn't have the correct offset from
-% moving?
-% U dip could be from goinng from the fixationn point (however we would
-% need to calibrate against this as people will be going from the fixation
-% point in the actual test.
-
 movingPoints = [meanAzi' meanEle'];
 fixedPoints = [locAzi' locEle'];
 tformTobii = fitgeotrans(movingPoints,fixedPoints,'affine');
@@ -47,13 +34,13 @@ h4 = scatter(newLoc(:,1),newLoc(:,2),50,'filled','green');
 legend([h1 h2 h3 h4],{'Actual Locations','Actual Reponses','Average Actual Resp','Geometric Correction on Av'})
 
 try
-save(sprintf('%s','C:\Psychophysics\HeadCalibrations\',partName,'\',...
-    partName,'HeadCalibParams',date,'.mat'),'partName','tformTobii')
+    save(sprintf('%s','C:\Psychophysics\HeadCalibrations\',partName,'\',...
+        partName,'HeadCalibParams',date,'.mat'),'partName','tformTobii')
 catch
     disp('Creating participant calibration folder')
     mkdir(sprintf('%s','C:\Psychophysics\HeadCalibrations\',partName))
     save(sprintf('%s','C:\Psychophysics\HeadCalibrations\',partName,'\',...
-    partName,'HeadCalibParams',date,'.mat'),'partName','tformTobii')
+        partName,'HeadCalibParams',date,'.mat'),'partName','tformTobii')
 end
 end
 

@@ -49,4 +49,27 @@ for currRep = 1:noReps
     end
 end
 
+% plotting fun
+locAzi = reshape(calibResponses(1,1,:),1,size(calibResponses,3));
+locEle = reshape(calibResponses(3,1,:),1,size(calibResponses,3));
+h1 = scatter(locAzi,locEle,50,'filled','black'); hold on
+grid on; grid minor; xlabel('Azimuth degrees'); ylabel('Elevation degrees');
+title('Head Tracking Calibration')
+axis([ -97.5, 97.5, -22.5, 52.5])
+set(gca,'xtick',[-97.5:7.5:97.5]);
+set(gca,'ytick',[-22.5:7.5:52.5]);
+
+% plot of actual responses with hopefully the geometric correction applied
+for currRep = 1:size(calibResponses,2)
+    x = reshape(calibResponses(2,currRep,:),1,size(calibResponses,3));
+    y = reshape(calibResponses(4,currRep,:),1,size(calibResponses,3));
+    h2 = scatter(x,y,15,'filled','blue'); hold on
+    Azi(currRep,:) = x;
+    Ele(currRep,:) = y;
+end
+meanAzi = mean(Azi);
+meanEle = mean(Ele);
+h3 = scatter(meanAzi,meanEle,50,'filled','green');
+
+
 end
