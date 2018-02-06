@@ -1,7 +1,7 @@
 %% Function to get the head response angle in azimuth and elevation
 function [responseFBAz,responseFBEle,currAngle,...
     currAccRoll,currAccPitch] = getHeadwithPython(calib,responseType,trialNo)
-global tformTobii %tformTobii is global so constant loading isnt needed
+global vE %tformTobii is global so constant loading isnt needed
 % profile on
 
 % Runs python code that grabs the livestream data (second argument is
@@ -13,6 +13,7 @@ else
     pythonInp1 = 'clicks';
     pythonInp2 = '0';
 end
+
 tic
 disp('Recording')
 %     system('python stayingalive.py') %Take about a second so may only need this at the begininng of most responses
@@ -120,12 +121,17 @@ end
 responseFBAz = -mean(currAngle.Y(end-5:end)); % Need to sign flip
 % Ele = currAngle.X
 responseFBEle = -mean(currAngle.X(end-5:end)); % also need to sign flip
+
+% Due to changes in fixation will need to adjust
+reponseFBEle = responseFBEle - vE.fixation.Ele;
+responseFBAz = reponseFBAz - vE.fixation.Ele;
+
 toc
 
 % Geometrically transforms resp based on calib response. Need to make sure
 % also apply the same geometric calib
 try
-    newLoc = transformPointsForward(tformTobii,[responseFBAz responseFBEle]);
+    newLoc = transformPointsForward(vE.tobiiCalibrations.tformTobii,[responseFBAz responseFBEle]);
     responseFBAz = newLoc(:,1);
     responseFBEle = newLoc(:,2);
 %     sendEventTobii(trialNo,'CalibratedHead') % A way to check recording offline

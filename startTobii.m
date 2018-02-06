@@ -42,9 +42,10 @@ while calibGood == 0 %checks if participant is calibrated if not will create a n
     data = struct('ca_participant',pa_id,'ca_type','default');
     url = sprintf('%s',base_url,apiCmd);
     response = webwrite(url,data,options); %send create new calib request
-    fprintf('%s','ca_id: ',response.ca_id,...
+    disp(sprintf('%s','ca_id: ',response.ca_id,...
         ' ca_participant: ',response.ca_participant,...
-        ' ca_project: ',response.ca_project)
+        ' ca_project: ',response.ca_project))
+    disp('')
     ca_id = response.ca_id;
     apiCmd = sprintf('%s','calibrations/',ca_id,'/start');
     data = struct('ca_id',ca_id);
@@ -56,10 +57,10 @@ while calibGood == 0 %checks if participant is calibrated if not will create a n
     apiCmd = sprintf('%s','calibrations/',ca_id);
     url = sprintf('%s',base_url,apiCmd);
     response = webread(url); %gets status of the calibration
+    disp('Calibrating...')
     while strcmp(response.ca_state,'calibrating')
         pause(1)
         response = webread(url);
-        disp('Calibrating')
     end
     if strcmp(response.ca_state,'calibrated')
         disp('Calibration was successful')

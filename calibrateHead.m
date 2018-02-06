@@ -1,5 +1,8 @@
 % Calibrate Head Tracking in Tobii for the Psychophsyics Booth
 clear all; close all
+global vE
+vE.fixation.Ele = -15;
+vE.fixation.Az = 0;
 instrreset;
 % Initialisation
 initialiseLEDs;
@@ -9,7 +12,9 @@ locations = readtable('CalibrationLocations.txt');
 noLocs = size(locations,1);
 currRow = 1;
 clicks = 0;
-noReps = 8;
+noReps = 4;
+fixationAz = 0;
+fixationEle = -15;
 
 % Init calib parameters
 calib.Pitch = 0;
@@ -24,7 +29,7 @@ try
 catch
     disp('Please put the glasses on a flat surface and press any key when ready')
     KbStrokeWait;
-    LEDcontrol(0,0,'on')
+    LEDcontrol(fixationAz,fixationEle,'on')
     [~,~,currAngle,currAccRoll,currAccPitch] = getHeadwithPython(calib,10,0);
     t = 1:length(currAngle.X);
     calib.Pitch = mean(currAccPitch);
@@ -48,7 +53,7 @@ for currRep = 1:noReps
     LocOrder = randperm(noLocs);
     for currLoc = 1:noLocs
         % Light centre light
-        LEDcontrol('Location','on','white',0,0);
+        LEDcontrol('Location','on','white',fixationAz,fixationEle);
         GetClicks();
         if currCount == 1
             system('python stayingalive.py'); %Take about a second so may only need this at the begininng of most responses
@@ -68,7 +73,7 @@ for currRep = 1:noReps
         currCount = currCount +1;
     end
 end
-save(sprintf('%s','C:\Psychophysics\HeadCalibrations\',date,'calibResponses.mat'),'calibResponses')
+save(sprintf('%s','C:\Psychophysics\HeadCalibrations\',date,'calibResponses.mat'),'calibResponses','calib')
 
 analyseHeadCalib(sprintf('%s','C:\Psychophysics\HeadCalibrations\',date,'calibResponses.mat'),partName)
 

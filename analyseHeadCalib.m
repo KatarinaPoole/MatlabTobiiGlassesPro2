@@ -35,12 +35,12 @@ legend([h1 h2 h3 h4],{'Actual Locations','Actual Reponses','Average Actual Resp'
 
 try
     save(sprintf('%s','C:\Psychophysics\HeadCalibrations\',partName,'\',...
-        partName,'HeadCalibParams',date,'.mat'),'partName','tformTobii')
+        partName,'HeadCalibParams',date,'.mat'),'partName','tformTobii','calib')
 catch
     disp('Creating participant calibration folder')
     mkdir(sprintf('%s','C:\Psychophysics\HeadCalibrations\',partName))
     save(sprintf('%s','C:\Psychophysics\HeadCalibrations\',partName,'\',...
-        partName,'HeadCalibParams',date,'.mat'),'partName','tformTobii')
+        partName,'HeadCalibParams',date,'.mat'),'partName','tformTobii','calib')
 end
 end
 
