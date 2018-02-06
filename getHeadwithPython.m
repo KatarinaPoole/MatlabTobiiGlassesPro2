@@ -123,8 +123,8 @@ responseFBAz = -mean(currAngle.Y(end-5:end)); % Need to sign flip
 responseFBEle = -mean(currAngle.X(end-5:end)); % also need to sign flip
 
 % Due to changes in fixation will need to adjust
-responseFBEle = responseFBEle - vE.fixation.Ele;
-responseFBAz = responseFBAz - vE.fixation.Az;
+responseFBEle = responseFBEle + vE.fixation.Ele;
+responseFBAz = responseFBAz + vE.fixation.Az;
 
 toc
 

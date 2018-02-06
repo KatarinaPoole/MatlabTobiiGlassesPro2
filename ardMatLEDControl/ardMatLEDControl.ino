@@ -1,6 +1,7 @@
 int SER_Pin = 11;   //pin 14 on the 75HC595
-int RCLK_Pin = 8;  //pin 12 on the 75HC595
+int RCLK_Pin = 8;   //pin 12 on the 75HC595
 int SRCLK_Pin = 12; //pin 11 on the 75HC595
+int OE_Pin = 3;     //pin 13 on the 75HC595
 
 //How many of the shift registers - change this
 #define number_of_74hc595s 14
@@ -14,6 +15,7 @@ void setup(){
   pinMode(SER_Pin, OUTPUT);
   pinMode(RCLK_Pin, OUTPUT);
   pinMode(SRCLK_Pin, OUTPUT);
+  pinMode(OE_Pin, OUTPUT);
   Serial.begin(115200);
   //Serial.println("Ready");       
 
@@ -56,8 +58,15 @@ void setRegisterPin(int index, int value){
   registers[index] = value;
 }
 
+//adjusts brightness of all LEDs
+void setBrightness(byte brightness) // 0 to 255
+{
+  analogWrite(OE_Pin,255-brightness);
+}
+
 
 void loop() {
+  setBrightness(50); // Change this to change the brightness of the LEDs
   if (Serial.available() > 0) {
     // Read the matlab integer
     int incomingMat = Serial.read();

@@ -1,5 +1,6 @@
 % Calibrate Head Tracking in Tobii for the Psychophsyics Booth
 global vE
+vE.avGUIHandles = [];
 vE.fixation.Ele = -15;
 vE.fixation.Az = 0;
 instrreset;
@@ -72,7 +73,8 @@ for currRep = 1:noReps
         currCount = currCount +1;
     end
 end
-save(sprintf('%s','C:\Psychophysics\HeadCalibrations\',date,'calibResponses.mat'),'calibResponses','calib','vE.fixation')
+
+save(sprintf('%s','C:\Psychophysics\HeadCalibrations\',date,'calibResponses.mat'),'calibResponses','calib','vE')
 
 LEDcontrol('Location','on','green',fixationAz,fixationEle);
 analyseHeadCalib(sprintf('%s','C:\Psychophysics\HeadCalibrations\',date,'calibResponses.mat'),partName)

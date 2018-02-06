@@ -2,11 +2,10 @@
 initialiseLEDs;
 pause(2);
 % Check all and in each Colour
-for i = 1:10
+% for i = 1:10
 for currLoc = 1:height(LED.info)
     LEDcontrol('Location','on','red',LED.info.LocAz(currLoc),...
         LED.info.LocEle(currLoc));
-%     char(fread(ardLED))
 end
 pause(1);
 LEDcontrol('Location','off')
@@ -23,7 +22,7 @@ for currLoc = 1:height(LED.info)
 end
 pause(1);
 LEDcontrol('Location','off')
-end
+% end
 % Christmas Lights - interestingly stops after a while. Something to do
 % with the buffer?
 colours = {'red','green','blue','yellow','cyan','purple','white'};
