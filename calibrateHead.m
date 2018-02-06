@@ -1,5 +1,4 @@
 % Calibrate Head Tracking in Tobii for the Psychophsyics Booth
-clear all; close all
 global vE
 vE.fixation.Ele = -15;
 vE.fixation.Az = 0;
@@ -12,7 +11,7 @@ locations = readtable('CalibrationLocations.txt');
 noLocs = size(locations,1);
 currRow = 1;
 clicks = 0;
-noReps = 4;
+noReps = 8;
 fixationAz = 0;
 fixationEle = -15;
 
@@ -23,25 +22,25 @@ calib.X = 0;
 calib.Z = 0;
 calib.Y = 0;
 
-%Get first response and new calibration parameters
-try
-    load(sprintf('%s','C:\Psychophysics\HeadCalibrations\',date,'_temp_Head_Calibration.mat'))
-catch
-    disp('Please put the glasses on a flat surface and press any key when ready')
-    KbStrokeWait;
-    LEDcontrol(fixationAz,fixationEle,'on')
-    [~,~,currAngle,currAccRoll,currAccPitch] = getHeadwithPython(calib,10,0);
-    t = 1:length(currAngle.X);
-    calib.Pitch = mean(currAccPitch);
-    calib.Roll = mean(currAccRoll);
-    fitvars = polyfit(t,currAngle.Y,1);
-    calib.Y = fitvars(1); % botch way of canceling out the drift
-    disp('Saving calibration')
-    save(sprintf('%s','C:\Psychophysics\HeadCalibrations\',date,'_temp_Head_Calibration.mat'),'calib')
-end
+% %Get first response and new calibration parameters
+% try
+%     load(sprintf('%s','C:\Psychophysics\HeadCalibrations\',date,'_temp_Head_Calibration.mat'))
+% catch
+disp('Please put the glasses on a flat surface and press any key when ready')
+KbStrokeWait;
+LEDcontrol(fixationAz,fixationEle,'on')
+[~,~,currAngle,currAccRoll,currAccPitch] = getHeadwithPython(calib,10,0);
+t = 1:length(currAngle.X);
+calib.Pitch = mean(currAccPitch);
+calib.Roll = mean(currAccRoll);
+fitvars = polyfit(t,currAngle.Y,1);
+calib.Y = fitvars(1); % botch way of canceling out the drift
+disp('Drift calibrated.')
+% save(sprintf('%s','C:\Psychophysics\HeadCalibrations\',date,'_temp_Head_Calibration.mat'),'calib')
+% end
 
-% Get participant name 
-partName = input('Please enter participant initials:   ','s');
+% Get participant name
+partName = vE.thisSub(end-1:end);
 
 % To avoid just getting one tobii cell need to presend a keep alive message
 disp('Response calibration time, press any key when ready and click the mouse when sitting and looking at the centre light')
@@ -73,10 +72,11 @@ for currRep = 1:noReps
         currCount = currCount +1;
     end
 end
-save(sprintf('%s','C:\Psychophysics\HeadCalibrations\',date,'calibResponses.mat'),'calibResponses','calib')
+save(sprintf('%s','C:\Psychophysics\HeadCalibrations\',date,'calibResponses.mat'),'calibResponses','calib','vE.fixation')
 
+LEDcontrol('Location','on','green',fixationAz,fixationEle);
 analyseHeadCalib(sprintf('%s','C:\Psychophysics\HeadCalibrations\',date,'calibResponses.mat'),partName)
-
+LEDcontrol('Location','off')
 % Then make adjustments based on reponse and actual location
 %
 % for currLoc = 1:noLocs

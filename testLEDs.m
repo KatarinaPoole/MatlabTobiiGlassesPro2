@@ -1,28 +1,29 @@
 % Test script that goes through and makes sure all colours and LEDs work
-instrreset
 initialiseLEDs;
 pause(2);
 % Check all and in each Colour
+for i = 1:10
 for currLoc = 1:height(LED.info)
     LEDcontrol('Location','on','red',LED.info.LocAz(currLoc),...
         LED.info.LocEle(currLoc));
+%     char(fread(ardLED))
 end
-pause(10);
+pause(1);
 LEDcontrol('Location','off')
 for currLoc = 1:height(LED.info)
     LEDcontrol('Location','on','green',LED.info.LocAz(currLoc),...
         LED.info.LocEle(currLoc));
 end
-pause(10);
+pause(1);
 LEDcontrol('Location','off')
 LEDcontrol('Location','off')
 for currLoc = 1:height(LED.info)
     LEDcontrol('Location','on','blue',LED.info.LocAz(currLoc),...
         LED.info.LocEle(currLoc));
 end
-pause(10);
+pause(1);
 LEDcontrol('Location','off')
-
+end
 % Christmas Lights - interestingly stops after a while. Something to do
 % with the buffer?
 colours = {'red','green','blue','yellow','cyan','purple','white'};

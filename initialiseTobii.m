@@ -76,11 +76,12 @@ vE.tobiiInfo.rec_id = rec_id;
 apiCmd = sprintf('%s','recordings/',rec_id,'/start');
 data = struct('rec_participant',rec_id);
 url = sprintf('%s',base_url,apiCmd);
-response = webwrite(url,data,options);
+webwrite(url,data,options);
 
 % Initialise drift and geotrans calibration parameters
 fileName = dir(sprintf('%s','C:\Psychophysics\HeadCalibrations\',partName,'\','*.mat'));
 load(sprintf('%s','C:\Psychophysics\HeadCalibrations\',partName,'\',fileName(end).name));
+vE.tobiiCalibrations.filename = fileName;
 vE.tobiiCalibrations.tformTobii = tformTobii;
 vE.tobiiCalibrations.calib = calib;
 

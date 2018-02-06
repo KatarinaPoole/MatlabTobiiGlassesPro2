@@ -1,7 +1,7 @@
 %% Function to get the head response angle in azimuth and elevation
 function [responseFBAz,responseFBEle,currAngle,...
     currAccRoll,currAccPitch] = getHeadwithPython(calib,responseType,trialNo)
-global vE %tformTobii is global so constant loading isnt needed
+global vE 
 % profile on
 
 % Runs python code that grabs the livestream data (second argument is
@@ -123,8 +123,8 @@ responseFBAz = -mean(currAngle.Y(end-5:end)); % Need to sign flip
 responseFBEle = -mean(currAngle.X(end-5:end)); % also need to sign flip
 
 % Due to changes in fixation will need to adjust
-reponseFBEle = responseFBEle - vE.fixation.Ele;
-responseFBAz = reponseFBAz - vE.fixation.Ele;
+responseFBEle = responseFBEle - vE.fixation.Ele;
+responseFBAz = responseFBAz - vE.fixation.Az;
 
 toc
 

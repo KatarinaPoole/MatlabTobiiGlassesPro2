@@ -40,9 +40,11 @@ if exist('ardLED','var')
             end
             for i = 1:length(currPin)
                 fwrite(ardLED,uint8(currPin(i)));
+%                 fwrite(ardLED,'!')
             end
         case 'off'
             fwrite(ardLED, uint8(0));
+%             fwrite(ardLED,'!')
             flushoutput(ardLED)
     end
 end

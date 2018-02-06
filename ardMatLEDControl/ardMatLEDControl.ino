@@ -15,7 +15,7 @@ void setup(){
   pinMode(RCLK_Pin, OUTPUT);
   pinMode(SRCLK_Pin, OUTPUT);
   Serial.begin(115200);
-  Serial.println("Ready");       
+  //Serial.println("Ready");       
 
   //reset all register pins
   clearRegisters();
@@ -62,8 +62,8 @@ void loop() {
     // Read the matlab integer
     int incomingMat = Serial.read();
     // say what you got:
-    Serial.print("I received: ");
-    Serial.println(incomingMat, DEC);
+    //Serial.print("I received: ");
+    //Serial.println(incomingMat, DEC);
     if (incomingMat == 0) {
       clearRegisters();
     }     
