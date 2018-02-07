@@ -1,6 +1,6 @@
 function stopTobiiandLEDs
 % Stop recording
-global vE 
+global vE ardLED
 base_url =  'http://[fe80::76fe:48ff:fe19:fbaf]/api/';
 options = weboptions('MediaType','application/json'); %to convert data to json
 rec_id = vE.tobiiInfo.rec_id;

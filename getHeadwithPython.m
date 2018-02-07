@@ -1,7 +1,8 @@
 %% Function to get the head response angle in azimuth and elevation
 function [responseFBAz,responseFBEle,currAngle,...
-    currAccRoll,currAccPitch] = getHeadwithPython(calib,responseType,trialNo)
-global vE 
+    currAccRoll,currAccPitch,error] = getHeadwithPython(calib,responseType,trialNo)
+global vE
+error = 0;
 % profile on
 
 % Runs python code that grabs the livestream data (second argument is
@@ -18,7 +19,7 @@ tic
 disp('Recording')
 %     system('python stayingalive.py') %Take about a second so may only need this at the begininng of most responses
 
-    rawtobiiData = python('livestream_data.py',pythonInp1, pythonInp2);
+rawtobiiData = python('livestream_data.py',pythonInp1, pythonInp2);
 toc
 
 if trialNo ~= 0
@@ -74,72 +75,80 @@ end
 
 % Get the sampling rates (should pick a value at some point to standardise
 % it but currently just using the mode
-GyHz = mode(diff(GyTs));
-dt = GyHz*1e-6; % get the sample rate in seconds for the integration
-
-% Smoooooooothing
-oldAcc = Acc;
-oldGy = Gy;
-for i = 1:size(oldAcc,2)
-    Acc(:,i) = smooth(oldAcc(:,i),0.02,'moving'); %smoothing on Acc data is it is noisy
-end
-for i = 1:size(oldGy,2)
-    Gy(:,i) = smooth(oldGy(:,i),0.02,'moving'); %smoothing on Acc data is it is noisy
-end
-
-% Resamples data as Acc and Gy have slightly differing sample rates
-p = max([length(Gy) length(Acc)]);
-q = min([length(Gy) length(Acc)]);
-if length(Acc) >= length(Gy)
-    Acc = resample(Acc,q,p); %will always want to resample Acc as we are downsampling to GyHz
-else
-    Acc = resample(Acc,p,q); % yet to avoid errors due to pulling uneven amount of Gy and Acc data put this in
-end
-oldAcc = Acc;
-oldGy = Gy; 
-% And then chop off the end of the biggest one to avoid indexing problems
-% or do this before the resampling
-    
-% Calculates the pitch and roll from Acc data
-for i = 1:length(Acc)-1
-    currAccPitch(i) = (atan2(Acc(i,2), Acc(i,3)) * 180/pi)+96-calib.Pitch;%added a random offest
-    currAccRoll(i) = (atan2(-Acc(i,1), sqrt(Acc(i,2)*Acc(i,2) + Acc(i,3)*Acc(i,3))) * 180/pi)-calib.Roll;
-end
-
-% Calculates actual angle using Gyroscope and Acc Data (Complimentary
-% Filter)
-%Added plus 15 to chop off the wierd begininng of the gy data
-adjustGy = 10;
-for idx = 1:length(Gy)-2-adjustGy % Takes off the beginning
-    currAngle.X(idx+1) = ((0.97*(currAngle.X(idx)+(Gy(idx+1+adjustGy,1)*dt)))+(0.03*currAccPitch(idx+1+adjustGy)));
-    currAngle.Y(idx+1) = (currAngle.Y(idx) + (Gy(idx+1+adjustGy,2)*dt))-calib.Y; % a botch job to cancel out the drift
-    currAngle.Z(idx+1) = ((0.97*(currAngle.Z(idx) + (Gy(idx+1+adjustGy,3)*dt)))+(0.03*currAccRoll(idx+1+adjustGy)));
-end
-
-% Gets a mean response angle looking at last few data points
-% Yaw = currAngle.Y, left is positive.
-responseFBAz = -mean(currAngle.Y(end-5:end)); % Need to sign flip
-% Ele = currAngle.X
-responseFBEle = -mean(currAngle.X(end-5:end)); % also need to sign flip
-
-% Due to changes in fixation will need to adjust
-responseFBEle = responseFBEle + vE.fixation.Ele;
-responseFBAz = responseFBAz + vE.fixation.Az;
-
-toc
-
-% Geometrically transforms resp based on calib response. Need to make sure
-% also apply the same geometric calib
 try
-    newLoc = transformPointsForward(vE.tobiiCalibrations.tformTobii,[responseFBAz responseFBEle]);
-    responseFBAz = newLoc(:,1);
-    responseFBEle = newLoc(:,2);
-%     sendEventTobii(trialNo,'CalibratedHead') % A way to check recording offline
+    GyHz = mode(diff(GyTs));
+    dt = GyHz*1e-6; % get the sample rate in seconds for the integration
+    
+    % Smoooooooothing
+    oldAcc = Acc;
+    oldGy = Gy;
+    for i = 1:size(oldAcc,2)
+        Acc(:,i) = smooth(oldAcc(:,i),0.02,'moving'); %smoothing on Acc data is it is noisy
+    end
+    for i = 1:size(oldGy,2)
+        Gy(:,i) = smooth(oldGy(:,i),0.02,'moving'); %smoothing on Acc data is it is noisy
+    end
+    
+    % Resamples data as Acc and Gy have slightly differing sample rates
+    p = max([length(Gy) length(Acc)]);
+    q = min([length(Gy) length(Acc)]);
+    if length(Acc) >= length(Gy)
+        Acc = resample(Acc,q,p); %will always want to resample Acc as we are downsampling to GyHz
+    else
+        Acc = resample(Acc,p,q); % yet to avoid errors due to pulling uneven amount of Gy and Acc data put this in
+    end
+    oldAcc = Acc;
+    oldGy = Gy;
+    % And then chop off the end of the biggest one to avoid indexing problems
+    % or do this before the resampling
+    
+    % Calculates the pitch and roll from Acc data
+    for i = 1:length(Acc)-1
+        currAccPitch(i) = (atan2(Acc(i,2), Acc(i,3)) * 180/pi)+96-calib.Pitch;%added a random offest
+        currAccRoll(i) = (atan2(-Acc(i,1), sqrt(Acc(i,2)*Acc(i,2) + Acc(i,3)*Acc(i,3))) * 180/pi)-calib.Roll;
+    end
+    
+    % Calculates actual angle using Gyroscope and Acc Data (Complimentary
+    % Filter)
+    %Added plus 15 to chop off the wierd begininng of the gy data
+    adjustGy = 10;
+    for idx = 1:length(Gy)-2-adjustGy % Takes off the beginning
+        currAngle.X(idx+1) = ((0.97*(currAngle.X(idx)+(Gy(idx+1+adjustGy,1)*dt)))+(0.03*currAccPitch(idx+1+adjustGy)));
+        currAngle.Y(idx+1) = (currAngle.Y(idx) + (Gy(idx+1+adjustGy,2)*dt))-calib.Y; % a botch job to cancel out the drift
+        currAngle.Z(idx+1) = ((0.97*(currAngle.Z(idx) + (Gy(idx+1+adjustGy,3)*dt)))+(0.03*currAccRoll(idx+1+adjustGy)));
+    end
+    
+    % Gets a mean response angle looking at last few data points
+    % Yaw = currAngle.Y, left is positive.
+    responseFBAz = -mean(currAngle.Y(end-5:end)); % Need to sign flip
+    % Ele = currAngle.X
+    responseFBEle = -mean(currAngle.X(end-5:end)); % also need to sign flip
+    
+    % Due to changes in fixation will need to adjust
+    responseFBEle = responseFBEle + vE.fixation.Ele;
+    responseFBAz = responseFBAz + vE.fixation.Az;
+    
+    toc
+    
+    % Geometrically transforms resp based on calib response. Need to make sure
+    % also apply the same geometric calib
+    try
+        newLoc = transformPointsForward(vE.tobiiCalibrations.tformTobii,[responseFBAz responseFBEle]);
+        responseFBAz = newLoc(:,1);
+        responseFBEle = newLoc(:,2);
+        %     sendEventTobii(trialNo,'CalibratedHead') % A way to check recording offline
+    catch
+        disp('Response is uncalibrated')
+        %     sendEventTobii(trialNo,'UncalibratedHead') % A way to check recording offline
+    end
 catch
-    disp('Response is uncalibrated')
-%     sendEventTobii(trialNo,'UncalibratedHead') % A way to check recording offline
+    responseFBAz = 0;
+    responseFBEle = 0;
+    currAngle = 0;
+    currAccRoll = 0;
+    currAccPitch = 0;
+    error = 1;
 end
-
 % Plots if you want it
 %
 % figure;%('Name',sprintf('%s',num2str(LocAz),' degress in Azimuth and ',num2str(LocEle),...
