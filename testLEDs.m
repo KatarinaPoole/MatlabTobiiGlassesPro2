@@ -15,7 +15,6 @@ for currLoc = 1:height(LED.info)
 end
 pause(1);
 LEDcontrol('Location','off')
-LEDcontrol('Location','off')
 for currLoc = 1:height(LED.info)
     LEDcontrol('Location','on','blue',LED.info.LocAz(currLoc),...
         LED.info.LocEle(currLoc));

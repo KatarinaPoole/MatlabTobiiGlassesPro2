@@ -4,7 +4,22 @@ global vE
 base_url =  'http://[fe80::76fe:48ff:fe19:fbaf]/api/';
 options = weboptions('MediaType','application/json'); %to convert data to json
 system('python stayingalive.py');
-            
+
+% Check battery and SSD card
+apiCmd = 'system/status';
+url = sprintf('%s',base_url,apiCmd);
+response = webread(url);
+batteryRemaining = response.sys_battery.remaining_time * 0.0167;
+batteryLevel = response.sys_battery.level;
+SSDcard = (response.sys_storage.remaining_time * 0.0167)/60;
+
+disp(sprintf('%s','Battery level remaining: ',num2str(batteryLevel),'%'))
+disp(sprintf('%s','Battery time reamining: ',num2str(batteryRemaining),' minutes'))
+disp(sprintf('%s','Storage remaining on SSD card: ',num2str(SSDcard),' hours'))
+
+disp('Press any key to continue')
+KbStrokeWait;
+
 % Create a new project
 apiCmd = 'projects';
 data = struct('sys_ec_preset',struct('name',expName,'xid',partName));
@@ -80,7 +95,8 @@ webwrite(url,data,options);
 
 % Initialise drift and geotrans calibration parameters
 fileName = dir(sprintf('%s','C:\Psychophysics\HeadCalibrations\',partName,'\','*.mat'));
-load(sprintf('%s','C:\Psychophysics\HeadCalibrations\',partName,'\',fileName(end).name));
+[~,idx] = sort([fileName.datenum]);
+load(sprintf('%s','C:\Psychophysics\HeadCalibrations\',partName,'\',fileName(idx(end)).name));
 vE.tobiiCalibrations.filename = fileName;
 vE.tobiiCalibrations.tformTobii = tformTobii;
 vE.tobiiCalibrations.calib = calib;

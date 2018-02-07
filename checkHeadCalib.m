@@ -1,20 +1,23 @@
 % Check calibration is good for the participant - put in a part which
 % just plots the reposne versu the actual locatin
 function checkHeadCalib(partName)
-clear all; close all
-instrreset;
+global vE
+vE.avGUIHandles = [];
+vE.fixation.Ele = -15;
+vE.fixation.Az = 0;
 % Initialisation
 initialiseLEDs;
 pause(2);
 % Variables
-locations = readtable('CalibrationLocations.txt');
+locations = readtable('AllLocations.txt');
 noLocs = size(locations,1);
 currRow = 1;
 clicks = 0;
-noReps = 3;
+noReps = 1;
 
-files = dir(sprintf('%s','C:\Psychophysics\HeadCalibrations\',partName));
-load(sprintf('%s','C:\Psychophysics\HeadCalibrations\',partName,'\',files(end).name))
+fileName = dir(sprintf('%s','C:\Psychophysics\HeadCalibrations\',partName,'\','*.mat'));
+[~,idx] = sort([fileName.datenum]);
+load(sprintf('%s','C:\Psychophysics\HeadCalibrations\',partName,'\',fileName(idx(end)).name));
 
 % To avoid just getting one tobii cell need to presend a keep alive message
 disp('Response calibration time, press any key when ready and click the mouse when sitting and looking at the centre light')
@@ -26,7 +29,7 @@ for currRep = 1:noReps
     LocOrder = randperm(noLocs);
     for currLoc = 1:noLocs
         % Light centre light
-        LEDcontrol('Location','on','white',0,0);
+        LEDcontrol('Location','on','white',vE.fixation.Az,vE.fixation.Ele);
         GetClicks();
         if currCount == 1
             system('python stayingalive.py'); %Take about a second so may only need this at the begininng of most responses
@@ -65,8 +68,8 @@ for currRep = 1:size(calibResponses,2)
     Azi(currRep,:) = x;
     Ele(currRep,:) = y;
 end
-meanAzi = mean(Azi);
-meanEle = mean(Ele);
-h3 = scatter(meanAzi,meanEle,50,'filled','green');
-
+% meanAzi = mean(Azi);
+% meanEle = mean(Ele);
+% h3 = scatter(meanAzi,meanEle,50,'filled','green');
+saveas(gcf,sprintf('%s','C:\Psychophysics\HeadCalibrations\',partName,'\',partName,'checkHeadCalib',date,'.fig'))
 end

@@ -48,6 +48,7 @@ disp('Response calibration time, press any key when ready and click the mouse wh
 KbStrokeWait;
 calibResponses = zeros(4,noReps,noLocs);
 currCount = 1;
+system('python stayingalive.py'); %Take about a second so may only need this at the begininng of most responses
 for currRep = 1:noReps
     % Randomise the locations
     LocOrder = randperm(noLocs);
@@ -55,9 +56,6 @@ for currRep = 1:noReps
         % Light centre light
         LEDcontrol('Location','on','white',fixationAz,fixationEle);
         GetClicks();
-        if currCount == 1
-            system('python stayingalive.py'); %Take about a second so may only need this at the begininng of most responses
-        end
         LEDcontrol('Location','off');
         % Light up target light
         pause(0.1)
