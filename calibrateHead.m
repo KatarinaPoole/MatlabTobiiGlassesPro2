@@ -12,7 +12,7 @@ locations = readtable('CalibrationLocations.txt');
 noLocs = size(locations,1);
 currRow = 1;
 clicks = 0;
-noReps = 6;
+noReps = 4;
 tobiiError = 0;
 
 
