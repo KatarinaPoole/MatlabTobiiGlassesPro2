@@ -12,7 +12,7 @@ locations = readtable('CalibrationLocations.txt');
 noLocs = size(locations,1);
 currRow = 1;
 clicks = 0;
-noReps = 4;
+noReps = 10;
 tobiiError = 0;
 
 
@@ -58,7 +58,7 @@ for currRep = 1:noReps
             % Light centre light
             LEDcontrol('Location','on','white',vE.fixation.Az,vE.fixation.Ele);
             GetClicks();
-            LEDcontrol('Location','off');
+            LEDcontrol('Location','allOff');
             % Light up target light
             pause(0.1)
             LEDcontrol('Location','on','white',locations.Azimuth(LocOrder(currLoc)),...
@@ -70,7 +70,7 @@ for currRep = 1:noReps
             fprintf('%s %s %s %s %s\n','Target response location was at ',num2str(locations.Azimuth(LocOrder(currLoc))),...
                 ' degrees in Azimuth and ',num2str(locations.Elevation(LocOrder(currLoc))),' degrees in Elevation. Error: ')
             disp(num2str(tobiiError))
-            LEDcontrol('Location','off');
+            LEDcontrol('Location','allOff');
             calibResponses(:,currRep,LocOrder(currLoc)) = [locations.Azimuth(LocOrder(currLoc)),...
                 responseFBAz,locations.Elevation(LocOrder(currLoc)),responseFBEle];
             save(sprintf('%s','C:\Psychophysics\HeadCalibrations\',date,'calibResponses.mat'),'calibResponses')
@@ -85,4 +85,4 @@ save(sprintf('%s','C:\Psychophysics\HeadCalibrations\',date,'calibResponses.mat'
 
 LEDcontrol('Location','on','green',vE.fixation.Az,vE.fixation.Ele);
 analyseHeadCalib(sprintf('%s','C:\Psychophysics\HeadCalibrations\',date,'calibResponses.mat'),partName)
-LEDcontrol('Location','off')
+LEDcontrol('Location','allOff')

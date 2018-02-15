@@ -7,7 +7,7 @@ if exist('ardLED','var')
             switch Mode
                 case 'Number'
                     currPin = LocAz;
-                case 'Location'                  
+                case 'Location'
                     switch LEDcolour
                         case 'red'
                             currPin = LED.info.R(LED.info.LocAz == LocAz &...
@@ -40,11 +40,53 @@ if exist('ardLED','var')
             end
             for i = 1:length(currPin)
                 fwrite(ardLED,uint8(currPin(i)));
-%                 fwrite(ardLED,'!')
+                %                 fwrite(ardLED,'!')
             end
-        case 'off'
+            
+            % Added in code to turn LEDs off individually
+        case 'off'   
+            switch Mode
+                case 'Number'
+                    currPin = LocAz;
+                case 'Location'
+                    switch LEDcolour
+                        case 'red'
+                            currPin = LED.info.R(LED.info.LocAz == LocAz &...
+                                LED.info.LocEle == LocEle,1);
+                        case 'green'
+                            currPin = LED.info.G(LED.info.LocAz == LocAz &...
+                                LED.info.LocEle == LocEle,1);
+                        case 'blue'
+                            currPin = LED.info.B(LED.info.LocAz == LocAz &...
+                                LED.info.LocEle == LocEle,1);
+                        case 'yellow' %yellow is more green because the green is is so bright
+                            currPin = [LED.info.R(LED.info.LocAz == LocAz &...
+                                LED.info.LocEle == LocEle,1) LED.info.G(LED.info.LocAz...
+                                == LocAz & LED.info.LocEle == LocEle,1)];
+                        case 'cyan'
+                            currPin = [LED.info.G(LED.info.LocAz == LocAz &...
+                                LED.info.LocEle == LocEle,1) LED.info.B(LED.info.LocAz...
+                                == LocAz & LED.info.LocEle == LocEle,1)];
+                        case 'purple'
+                            currPin = [LED.info.R(LED.info.LocAz == LocAz &...
+                                LED.info.LocEle == LocEle,1) LED.info.B(LED.info.LocAz...
+                                == LocAz & LED.info.LocEle == LocEle,1)];
+                        case 'white'
+                            currPin = [LED.info.R(LED.info.LocAz == LocAz &...
+                                LED.info.LocEle == LocEle,1) LED.info.G(LED.info.LocAz...
+                                == LocAz & LED.info.LocEle == LocEle,1) LED.info.B(LED.info.LocAz...
+                                == LocAz & LED.info.LocEle == LocEle,1)];
+                            
+                    end
+            end
+            for i = 1:length(currPin)
+                fwrite(ardLED,uint8(currPin(i)+120));
+                %                 fwrite(ardLED,'!')
+            end
+            
+        case 'allOff' % Turns all off and clears the registers
             fwrite(ardLED, uint8(0));
-%             fwrite(ardLED,'!')
+            %             fwrite(ardLED,'!')
             flushoutput(ardLED)
     end
 end

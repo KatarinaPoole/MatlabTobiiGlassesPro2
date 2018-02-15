@@ -13,7 +13,7 @@ LEDfileName = dir('C:\Psychophysics\assignLEDs*.txt');
 LED.info = readtable(LEDfileName.name,'HeaderLines',0,'ReadVariableNames',1);
 fopen(ardLED); %when opening the connection is causes the led to go white
 % ardLED.Terminator = '!';
-LEDcontrol('Location','off')
+LEDcontrol('Location','allOff')
 
 %uninitialise
 %     fclose(ardLED);

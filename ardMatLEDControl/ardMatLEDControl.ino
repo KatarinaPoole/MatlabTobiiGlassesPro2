@@ -66,7 +66,7 @@ void setBrightness(byte brightness) // 0 to 255
 
 
 void loop() {
-  setBrightness(50); // Change this to change the brightness of the LEDs
+  setBrightness(50); // Change this to change the brightness of the LEDs (50)
   if (Serial.available() > 0) {
     // Read the matlab integer
     int incomingMat = Serial.read();
@@ -75,6 +75,10 @@ void loop() {
     //Serial.println(incomingMat, DEC);
     if (incomingMat == 0) {
       clearRegisters();
+    }
+    else if (incomingMat > 120) { //abritrarly picked that number as it needs to be more than LED pins but 103 less than 255 because of uint8 function
+      setRegisterPin(incomingMat - 121, LOW);
+      writeRegisters();
     }     
     else {
       setRegisterPin(incomingMat - 1, HIGH);

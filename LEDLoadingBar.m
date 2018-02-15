@@ -15,15 +15,10 @@ for i = 1:length(LocAz)
 end
 
 % Turn off Az LEDs one by one
-for i = 1:length(LocAz)
-    LEDcontrol('Location','off')
-    for ii = 1:length(LocAz)-i
-        LEDcontrol('Location','on','blue',LocAz(ii),LocEle(ii))       
-    end
+for i = length(LocAz):-1:1
+    LEDcontrol('Location','off','blue',LocAz(i),LocEle(i))
     pause(time/length(LocAz))
 end
-
-LEDcontrol('Location','off')
 
 end
 
