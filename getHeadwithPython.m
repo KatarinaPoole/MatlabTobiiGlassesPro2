@@ -46,7 +46,7 @@ if error == 0
             if i == 1
                 tobiiData{i,1} = rawtobiiData{i,1}(4:end-4);
             elseif i == length(rawtobiiData)
-                tobiiData{i,1} = rawtobiiData{i,1};
+                tobiiData{i,1} = rawtobiiData{i,1}(2:end-2);
             else
                 tobiiData{i,1} = rawtobiiData{i,1}(3:end-4);
             end
@@ -85,6 +85,8 @@ if error == 0
                 end
             end
         end
+        kaja = []
+        leftClick = tobiiData(end)
         
         % Get the sampling rates (should pick a value at some point to standardise
         % it but currently just using the mode
