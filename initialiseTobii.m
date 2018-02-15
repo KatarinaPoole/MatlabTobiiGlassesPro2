@@ -14,7 +14,7 @@ batteryLevel = response.sys_battery.level;
 SSDcard = (response.sys_storage.remaining_time * 0.0167)/60;
 
 disp(sprintf('%s','Battery level remaining: ',num2str(batteryLevel),'%'))
-disp(sprintf('%s','Battery time reamining: ',num2str(batteryRemaining),' minutes'))
+disp(sprintf('%s','Battery time remaining: ',num2str(batteryRemaining),' minutes'))
 disp('')
 disp(sprintf('%s','Storage remaining on SSD card: ',num2str(SSDcard),' hours'))
 
