@@ -1,8 +1,10 @@
 %% Function to get the head response angle in azimuth and elevation
 function [responseFBAz,responseFBEle,currAngle,...
-    currAccRoll,currAccPitch,error] = getHeadwithPython(calib,responseType,trialNo)
+    currAccRoll,currAccPitch,error,leftClick,rightClick] = getHeadwithPython(calib,responseType,trialNo)
 global vE
 error = 0;
+leftClick = 0;
+rightClick = 0;
 % profile on
 
 % Runs python code that grabs the livestream data (second argument is
@@ -43,6 +45,8 @@ if error == 0
         for i = 1:length(rawtobiiData)
             if i == 1
                 tobiiData{i,1} = rawtobiiData{i,1}(4:end-4);
+            elseif i == length(rawtobiiData)
+                tobiiData{i,1} = rawtobiiData{i,1};
             else
                 tobiiData{i,1} = rawtobiiData{i,1}(3:end-4);
             end
@@ -53,7 +57,7 @@ if error == 0
         currAngle.X = 0; currAngle.Y = 0; currAngle.Z = 0;
         
         % Pull Data from the JSON Cell array
-        for currRow = 1:length(tobiiData)
+        for currRow = 1:length(tobiiData)-1
             if contains(tobiiData{currRow},'gy') %pulls out the GY JSON lines
                 if tobiiData{currRow}(end)=='}'
                     GyTs(currGyRow) = str2double(tobiiData{currRow}...which is in microseconds

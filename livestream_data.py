@@ -16,7 +16,11 @@ running = True
 GLASSES_IP = "fe80::76fe:48ff:fe19:fbaf"  # IPv6 address scope global
 PORT = 49152
 tobiiData = []
-clicks = 0
+rightClick = 0
+leftClick = 0
+rightClickVal = 0
+leftClickVal = 0
+
 # Keep-alive message content used to request live data and live video streams
 KA_DATA_STR = "{\"type\": \"live.data.unicast\", \"key\": \"some_GUID\", \"op\": \"start\"}"
 KA_DATA_MSG = KA_DATA_STR.encode() #need to encode it to work with python 3.6
@@ -68,11 +72,17 @@ if __name__ == "__main__":
 			data, address = data_socket.recvfrom(1024)
 			tobiiData.append(data)
 			if var1 == 'clicks':
-				clicks = win32api.GetAsyncKeyState(0x01) # get clicks
-				if clicks != 0: # if theres a click anywhere stop the while loop
+				leftClick = win32api.GetAsyncKeyState(0x01) # get right click
+				rightClick = win32api.GetAsyncKeyState(0x02) # get right click
+				if leftClick!= 0: # if theres a click anywhere stop the while loop
+					leftClickVal = 1
+					running = False
+				elif rightClick!= 0:
+					rightClickVal = 1
 					running = False
 			else:
 				if time.time() > calibTime:
 					running = False
+		tobiiData.append('{ Right Mouse Button:  ' + str(leftClickVal) + ' Left Mouse Button: ' + str(rightClickVal) + ' }' )	
 		sys.stdout.write(str(tobiiData)) 
 		
