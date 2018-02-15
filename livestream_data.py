@@ -83,6 +83,6 @@ if __name__ == "__main__":
 			else:
 				if time.time() > calibTime:
 					running = False
-		tobiiData.append('{Right Mouse Button:' + str(leftClickVal) + ',Left Mouse Button:' + str(rightClickVal) + '}' )	
+		tobiiData.append('{Right_mouse_button:' + str(leftClickVal) + ',Left_mouse_button:' + str(rightClickVal) + '}' )	
 		sys.stdout.write(str(tobiiData)) 
 		
