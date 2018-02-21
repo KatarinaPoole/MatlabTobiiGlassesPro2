@@ -97,9 +97,12 @@ vE.tobiiInfo.pa_id = pa_id;
 % webwrite(url,data,options);
 
 % Initialise drift and geotrans calibration parameters
-fileName = dir(sprintf('%s','C:\Psychophysics\HeadCalibrations\',partName,'\','*.mat'));
-[~,idx] = sort([fileName.datenum]);
-load(sprintf('%s','C:\Psychophysics\HeadCalibrations\',partName,'\',fileName(idx(end)).name));
+% fileName = dir(sprintf('%s','C:\Psychophysics\HeadCalibrations\',partName,'\','*.mat'));
+% [~,idx] = sort([fileName.datenum]);
+% load(sprintf('%s','C:\Psychophysics\HeadCalibrations\',partName,'\',fileName(idx(end)).name));
+
+fileName = sprintf('%s',vE.thisSubDir,'\',vE.sessionType,'\',num2str(vE.sessionNumber),'\',partName,'HeadCalibParams',date,'.mat');
+load(fileName)
 vE.tobiiCalibrations.filename = fileName;
 vE.tobiiCalibrations.tformTobii = tformTobii;
 vE.tobiiCalibrations.calib = calib;

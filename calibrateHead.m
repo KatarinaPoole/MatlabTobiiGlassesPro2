@@ -1,5 +1,6 @@
 % Calibrate Head Tracking in Tobii for the Psychophsyics Booth
 global vE
+initialiseDirs
 vE.avGUIHandles = [];
 vE.fixation.Ele = -7.5;
 vE.fixation.Az = 0;
@@ -12,7 +13,7 @@ locations = readtable('CalibrationLocations.txt');
 noLocs = size(locations,1);
 currRow = 1;
 clicks = 0;
-noReps = 10;
+noReps = 5;
 tobiiError = 0;
 
 
@@ -23,10 +24,11 @@ calib.X = 0;
 calib.Z = 0;
 calib.Y = 0;
 
-% %Get first response and new calibration parameters
+%Get first response and new calibration parameters
 % try
 %     load(sprintf('%s','C:\Psychophysics\HeadCalibrations\',date,'_temp_Head_Calibration.mat'))
 % catch
+
 disp('Please put the glasses on a flat surface and press any key when ready')
 KbStrokeWait;
 LEDcontrol(vE.fixation.Az,vE.fixation.Ele,'on')
@@ -37,6 +39,7 @@ calib.Roll = mean(currAccRoll);
 fitvars = polyfit(t,currAngle.Y,1);
 calib.Y = fitvars(1); % botch way of canceling out the drift
 disp('Drift calibrated.')
+
 % save(sprintf('%s','C:\Psychophysics\HeadCalibrations\',date,'_temp_Head_Calibration.mat'),'calib')
 % end
 
@@ -58,13 +61,38 @@ for currRep = 1:noReps
             % Light centre light
             LEDcontrol('Location','on','white',vE.fixation.Az,vE.fixation.Ele);
             GetClicks();
-            LEDcontrol('Location','allOff');
+            LEDcontrol('Location','off','white',vE.fixation.Az,vE.fixation.Ele);
             % Light up target light
             pause(0.1)
             LEDcontrol('Location','on','white',locations.Azimuth(LocOrder(currLoc)),...
                 locations.Elevation(LocOrder(currLoc)));
-            [responseFBAz,responseFBEle,~,~,~,tobiiError] = getHeadwithPython(calib,...
+            % Turn on guide lights            
+            LEDcontrol('Location','on','green',vE.fixation.Az,vE.fixation.Ele);
+            if locations.Elevation(LocOrder(currLoc)) ~= 0
+                for trackLED = -7.5:7.5*sign(locations.Elevation(LocOrder(currLoc))):locations.Elevation(LocOrder(currLoc))
+                    LEDcontrol('Location','on','green',0,trackLED)
+                end
+            elseif locations.Azimuth(LocOrder(currLoc)) ~= 0
+                for trackLED = 0:7.5*sign(locations.Azimuth(LocOrder(currLoc))):locations.Azimuth(LocOrder(currLoc))
+                    LEDcontrol('Location','on','green',trackLED,0)
+                end
+            end
+            
+            [responseFBAz,responseFBEle,~,~,~,tobiiError,leftClick,rightClick] = getHeadwithPython(calib,...
                 'clicks',0);
+            
+            % Turn off guide lights
+            LEDcontrol('Location','off','green',vE.fixation.Az,vE.fixation.Ele);
+            if locations.Elevation(LocOrder(currLoc)) ~= 0
+                for trackLED = -7.5:7.5*sign(locations.Elevation(LocOrder(currLoc))):locations.Elevation(LocOrder(currLoc))
+                    LEDcontrol('Location','off','green',0,trackLED)
+                end
+            elseif locations.Azimuth(LocOrder(currLoc)) ~= 0
+                for trackLED = 0:7.5*sign(locations.Azimuth(LocOrder(currLoc))):locations.Azimuth(LocOrder(currLoc))
+                    LEDcontrol('Location','off','green',trackLED,0)
+                end
+            end
+            
             fprintf('%s %s %s %s %s\n','Subject response location was at ',num2str(responseFBAz),...
                 ' degrees in Azimuth and ',num2str(responseFBEle),' degrees in Elevation.')
             fprintf('%s %s %s %s %s\n','Target response location was at ',num2str(locations.Azimuth(LocOrder(currLoc))),...
@@ -73,16 +101,19 @@ for currRep = 1:noReps
             LEDcontrol('Location','allOff');
             calibResponses(:,currRep,LocOrder(currLoc)) = [locations.Azimuth(LocOrder(currLoc)),...
                 responseFBAz,locations.Elevation(LocOrder(currLoc)),responseFBEle];
-            save(sprintf('%s','C:\Psychophysics\HeadCalibrations\',date,'calibResponses.mat'),'calibResponses')
-            if tobiiError == 0
+            save(sprintf('%s',vE.thisSubDir,'\',vE.sessionType,'\',num2str(vE.sessionNumber),'\',date,'calibResponses.mat'),'calibResponses')
+            if tobiiError == 0 && rightClick == 0 %% add in msitake functionality
                 carryon = 0;
             end
         end
     end
 end
 
-save(sprintf('%s','C:\Psychophysics\HeadCalibrations\',date,'calibResponses.mat'),'calibResponses','calib','vE')
+save(sprintf('%s',vE.thisSubDir,'\',vE.sessionType,'\',num2str(vE.sessionNumber),'\',date,'calibResponses.mat'),'calibResponses','calib','vE')
+% save(sprintf('%s','C:\Psychophysics\HeadCalibrations\',date,'calibResponses.mat'),'calibResponses','calib','vE')
+
+% analyseHeadCalib('C:\Users\King Admin\Desktop\Mark_elAziPlug\eleAziPlug\data\88_KP\intermittent\1\20-Feb-2018calibResponses.mat','KP')
 
 LEDcontrol('Location','on','green',vE.fixation.Az,vE.fixation.Ele);
-analyseHeadCalib(sprintf('%s','C:\Psychophysics\HeadCalibrations\',date,'calibResponses.mat'),partName)
+analyseHeadCalib(sprintf('%s',vE.thisSubDir,'\',vE.sessionType,'\',num2str(vE.sessionNumber),'\',date,'calibResponses.mat'),partName,vE)
 LEDcontrol('Location','allOff')

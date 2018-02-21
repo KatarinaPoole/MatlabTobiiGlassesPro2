@@ -30,4 +30,3 @@ Azimuth	Elevation
 0	22.5
 0	15
 0	7.5
-0	-7.5

@@ -1,6 +1,6 @@
 % Analyse the head calibration responses and will apply the appropriate
 % calibration
-function analyseHeadCalib(fileName,partName)
+function analyseHeadCalib(fileName,partName,vE)
 
 load(fileName)
 
@@ -20,7 +20,7 @@ for currRep = 1:size(calibResponses,2)
     Azi(currRep,:) = x;
     Ele(currRep,:) = y;
 end
-meanAzi = mean(Azi);
+meanAzi = mean(Azi); % took mean before
 meanEle = mean(Ele);
 h3 = scatter(meanAzi,meanEle,50,'filled','red');
 
@@ -33,14 +33,7 @@ h4 = scatter(newLoc(:,1),newLoc(:,2),50,'filled','green');
 
 legend([h1 h2 h3 h4],{'Actual Locations','Actual Reponses','Average Actual Resp','Geometric Correction on Av'})
 
-try
-    save(sprintf('%s','C:\Psychophysics\HeadCalibrations\',partName,'\',...
-        partName,'HeadCalibParams',date,'.mat'),'partName','tformTobii','calib')
-catch
-    disp('Creating participant calibration folder')
-    mkdir(sprintf('%s','C:\Psychophysics\HeadCalibrations\',partName))
-    save(sprintf('%s','C:\Psychophysics\HeadCalibrations\',partName,'\',...
-        partName,'HeadCalibParams',date,'.mat'),'partName','tformTobii','calib')
-end
+save(sprintf('%s',vE.thisSubDir,'\',vE.sessionType,'\',num2str(vE.sessionNumber),'\',...
+    partName,'HeadCalibParams',date,'.mat'),'partName','tformTobii','calib')
 end
 

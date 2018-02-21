@@ -85,8 +85,8 @@ if error == 0
                 end
             end
         end
-        kaja = []
-        leftClick = tobiiData(end)
+        leftClick = tobiiData{end}(20);
+        rightClick = tobiiData{end}(end-1);
         
         % Get the sampling rates (should pick a value at some point to standardise
         % it but currently just using the mode
